@@ -93,12 +93,6 @@ const filterAnalyticsData = (
   for (let i = step; i < data.length - step; i += step) {
     const current = data[i];
 
-    // Always keep points with quality issues
-    const hasQualityIssue =
-      current.readingQuality?.temperature !== "good" ||
-      current.readingQuality?.humidity !== "good" ||
-      current.readingQuality?.pressure !== "good";
-
     // Check for significant changes
     const tempChange =
       Math.abs(current.temperature - lastAddedPoint.temperature) >
@@ -118,7 +112,6 @@ const filterAnalyticsData = (
       ) * 60;
 
     if (
-      hasQualityIssue ||
       tempChange ||
       humidityChange ||
       pressureChange ||
@@ -177,6 +170,7 @@ const formatChartData = (
       pressure: Number(
         convertPressure(item.pressure, settings.units.pressure).toFixed(1)
       ),
+      distance: Number(item.distance.toFixed(1)),
     };
   });
 };
@@ -193,35 +187,37 @@ export default function AnalyticsPage() {
   const charts = [
     {
       title: "Temperature Analysis",
-      type: "line" as const,
       dataKey: "temperature",
       yAxisLabel: `Temperature (${
         settings.units.temperature === "celsius" ? "°C" : "°F"
       })`,
       color: "hsl(var(--chart-1))",
-      domain:
-        settings.units.temperature === "celsius"
-          ? ([10, 40] as [number, number]) // Wider range for Celsius
-          : ([50, 104] as [number, number]), // Wider range for Fahrenheit
+      type: "line" as const,
+      fill: "hsl(var(--chart-1) / 0.1)",
     },
     {
       title: "Humidity Analysis",
-      type: "area" as const,
       dataKey: "humidity",
       yAxisLabel: "Humidity (%)",
       color: "hsl(var(--chart-2))",
-      domain: [20, 80] as [number, number], // Wider range for humidity
+      type: "area" as const,
+      fill: "hsl(var(--chart-2) / 0.1)",
     },
     {
       title: "Pressure Analysis",
-      type: "bar" as const,
       dataKey: "pressure",
       yAxisLabel: `Pressure (${settings.units.pressure})`,
-      color: "hsl(var(--chart-3) / 0.9)",
-      domain:
-        settings.units.pressure === "hPa"
-          ? ([900, 1100] as [number, number]) // Wider range for hPa
-          : ([675, 825] as [number, number]), // Wider range for mmHg
+      color: "hsl(var(--chart-3))",
+      type: "line" as const,
+      fill: "hsl(var(--chart-3) / 0.1)",
+    },
+    {
+      title: "Distance Analysis",
+      dataKey: "distance",
+      yAxisLabel: "Distance (cm)",
+      color: "hsl(var(--chart-4))",
+      type: "line" as const,
+      fill: "hsl(var(--chart-4) / 0.1)",
     },
   ];
 

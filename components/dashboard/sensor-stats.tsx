@@ -1,6 +1,6 @@
 "use client";
 
-import { Thermometer, Droplets, Wind, Activity } from "lucide-react";
+import { Thermometer, Droplets, Wind, Activity, Ruler } from "lucide-react";
 import { SensorCard } from "@/components/sensor-card";
 import type { SensorData } from "@/types/sensor";
 import { useSettingsStore } from "@/lib/stores/settings-store";
@@ -22,9 +22,16 @@ export function SensorStats({ sensors }: SensorStatsProps) {
       avgTemperature: acc.avgTemperature + (sensor.temperature || 0),
       avgHumidity: acc.avgHumidity + (sensor.humidity || 0),
       avgPressure: acc.avgPressure + (sensor.pressure || 0),
+      avgDistance: acc.avgDistance + (sensor.distance || 0),
       count: acc.count + 1,
     }),
-    { avgTemperature: 0, avgHumidity: 0, avgPressure: 0, count: 0 }
+    {
+      avgTemperature: 0,
+      avgHumidity: 0,
+      avgPressure: 0,
+      avgDistance: 0,
+      count: 0,
+    }
   );
 
   const activeSensors = sensors.length;
@@ -34,6 +41,7 @@ export function SensorStats({ sensors }: SensorStatsProps) {
   const avgTemperature = stats.avgTemperature / divisor;
   const avgHumidity = stats.avgHumidity / divisor;
   const avgPressure = stats.avgPressure / divisor;
+  const avgDistance = stats.avgDistance / divisor;
 
   // Convert values based on selected units
   const convertedTemperature = convertTemperature(
@@ -71,12 +79,12 @@ export function SensorStats({ sensors }: SensorStatsProps) {
       progress: Math.min(100, (avgPressure / 1100) * 100), // Keep progress based on hPa
     },
     {
-      title: "Active Sensors",
-      value: activeSensors,
-      unit: "devices",
-      icon: <Activity className="h-4 w-4 text-white" />,
+      title: "Distance",
+      value: avgDistance,
+      unit: "cm",
+      icon: <Ruler className="h-4 w-4 text-white" />,
       color: "bg-chart-4",
-      progress: Math.min(100, (activeSensors / 10) * 100),
+      progress: Math.min(100, (avgDistance / 400) * 100),
     },
   ];
 

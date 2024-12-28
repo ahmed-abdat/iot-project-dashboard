@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import {
   IconLayoutDashboard,
@@ -8,15 +8,34 @@ import {
   IconBellRinging,
   IconSettings,
   IconDevices,
+  IconLogout,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 export function MainSidebar() {
   const [open, setOpen] = useState(true);
   const pathname = usePathname();
+  const { signOut } = useAuth();
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
+  // Auto collapse on mobile
+  useEffect(() => {
+    if (isMobile) {
+      setOpen(false);
+    } else {
+      setOpen(true);
+    }
+  }, [isMobile]);
+
+  // Hide sidebar on login page
+  if (pathname === "/login") {
+    return null;
+  }
 
   const links = [
     {
@@ -50,16 +69,25 @@ export function MainSidebar() {
   ];
 
   return (
-    <Sidebar open={open} setOpen={setOpen}>
+    <Sidebar
+      open={open}
+      setOpen={setOpen}
+      showToggle={!isMobile}
+      className={cn(
+        "transition-all duration-300 z-50",
+        isMobile ? "w-[70px]" : open ? "w-[240px]" : "w-[70px]"
+      )}
+    >
       <SidebarBody className="justify-between gap-8">
         <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-          {open ? <Logo /> : <LogoIcon />}
+          {!isMobile && open ? <Logo /> : <LogoIcon />}
           <div className="mt-8 flex flex-col gap-2">
             {links.map((link) => (
               <SidebarLink
                 key={link.href}
                 link={{
                   ...link,
+                  label: !isMobile && open ? link.label : "",
                   className: cn(
                     "hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-md transition-colors",
                     pathname === link.href &&
@@ -70,6 +98,16 @@ export function MainSidebar() {
             ))}
           </div>
         </div>
+        <button
+          onClick={() => signOut()}
+          className={cn(
+            "flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200",
+            "hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-md transition-colors"
+          )}
+        >
+          <IconLogout className="h-5 w-5 flex-shrink-0" />
+          {!isMobile && open && <span>Logout</span>}
+        </button>
       </SidebarBody>
     </Sidebar>
   );

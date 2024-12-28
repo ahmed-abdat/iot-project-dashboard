@@ -2,7 +2,17 @@
 
 import { useState } from "react";
 import { useTheme } from "next-themes";
-import { Moon, Sun, Laptop, Bell, Gauge, Mail, Save } from "lucide-react";
+import {
+  Moon,
+  Sun,
+  Laptop,
+  Bell,
+  Gauge,
+  Mail,
+  Save,
+  Settings2,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -74,13 +84,6 @@ export function SettingsView() {
       description="Manage your application preferences"
     >
       <div className="flex flex-col gap-6">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
-          <p className="text-muted-foreground">
-            Manage your application preferences and sensor configuration.
-          </p>
-        </div>
-
         <Tabs defaultValue="appearance" className="space-y-4">
           <TabsList className="bg-muted">
             <TabsTrigger value="appearance" className="flex items-center gap-2">
@@ -97,6 +100,10 @@ export function SettingsView() {
             >
               <Bell className="h-4 w-4" />
               Notifications
+            </TabsTrigger>
+            <TabsTrigger value="sensor" className="flex items-center gap-2">
+              <Settings2 className="h-4 w-4" />
+              Sensor
             </TabsTrigger>
           </TabsList>
 
@@ -257,6 +264,53 @@ export function SettingsView() {
                 <Button onClick={handleSave} disabled={isSaving}>
                   <Save className="mr-2 h-4 w-4" />
                   Save Changes
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="sensor">
+            <Card>
+              <CardHeader>
+                <CardTitle>Sensor Configuration</CardTitle>
+                <CardDescription>
+                  Configure sensor update interval and other settings
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label>Update Interval</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      min={5}
+                      max={3600}
+                      value={settings.updateInterval}
+                      onChange={(e) =>
+                        setUpdateInterval(Number(e.target.value))
+                      }
+                      className="w-[120px]"
+                    />
+                    <span className="flex items-center text-sm text-muted-foreground">
+                      seconds
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    How often the sensor should send new readings (minimum 5
+                    seconds, maximum 1 hour)
+                  </p>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button onClick={handleSave} disabled={isSaving}>
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
                 </Button>
               </CardFooter>
             </Card>

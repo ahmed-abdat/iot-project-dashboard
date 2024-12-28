@@ -1,18 +1,15 @@
+import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { cn } from "@/lib/utils";
-import { Providers } from "./providers";
-import { MainSidebar } from "@/components/layout/main-sidebar";
 import "./globals.css";
-import { AlertProvider } from "@/components/providers/alert-provider";
-import { AlertIndicator } from "@/components/alerts/alert-indicator";
-import { AlertMonitor } from "@/components/alerts/alert-monitor";
-import { Toaster } from "@/components/ui/sonner";
+import { MainSidebar } from "@/components/layout/main-sidebar";
+import { cn } from "@/lib/utils";
+import { Providers } from "@/components/providers/providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata = {
-  title: "IoT Control Dashboard",
-  description: "Monitor and control your IoT devices",
+export const metadata: Metadata = {
+  title: "IoT Dashboard",
+  description: "Real-time monitoring and analytics for IoT sensors",
 };
 
 export default function RootLayout({
@@ -24,17 +21,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={cn(inter.className, "antialiased")}>
         <Providers>
-          <AlertProvider>
-            <div className="flex h-screen overflow-hidden">
-              <MainSidebar />
-              <main className="flex-1 overflow-y-auto bg-background">
-                {children}
-              </main>
-            </div>
-            <AlertIndicator />
-            <AlertMonitor />
-            <Toaster />
-          </AlertProvider>
+          <div className="flex h-screen overflow-hidden">
+            <MainSidebar />
+            <main className="flex-1 overflow-y-auto bg-background">
+              {children}
+            </main>
+          </div>
         </Providers>
       </body>
     </html>

@@ -27,6 +27,7 @@ interface SensorChartProps {
   dataKey: string;
   yAxisLabel: string;
   color: string;
+  fill?: string;
   domain?: [number | "auto", number | "auto"];
 }
 
@@ -46,28 +47,18 @@ const formatTimestamp = (timestamp: Date) => {
 };
 
 const CustomTooltip = ({ active, payload, label }: any) => {
-  const settings = useSettingsStore((state) => state.settings);
-
   if (active && payload && payload.length) {
-    const time = payload[0]?.payload?.time;
     return (
       <div className="bg-background/95 border rounded-lg shadow-lg p-3 text-sm">
-        <p className="font-medium">{time ? formatTimestamp(time) : label}</p>
+        <p className="font-medium text-foreground">{label}</p>
         {payload.map((entry: any) => (
           <div key={entry.name} className="flex items-center gap-2 mt-1">
             <div
               className="w-3 h-3 rounded-full"
               style={{ backgroundColor: entry.color }}
             />
-            <span>
-              {entry.name}: {entry.value.toFixed(1)}
-              {entry.dataKey === "temperature"
-                ? settings.units.temperature === "celsius"
-                  ? "°C"
-                  : "°F"
-                : entry.dataKey === "humidity"
-                ? "%"
-                : ` ${settings.units.pressure}`}
+            <span className="text-muted-foreground">
+              {entry.name}: {entry.value.toFixed(1)} {entry.unit}
             </span>
           </div>
         ))}
@@ -84,6 +75,7 @@ export function SensorChart({
   dataKey,
   yAxisLabel,
   color,
+  fill,
   domain = ["auto", "auto"],
 }: SensorChartProps) {
   const renderChart = () => {
@@ -94,7 +86,7 @@ export function SensorChart({
 
     const commonElements = (
       <>
-        <CartesianGrid strokeDasharray="3 3" opacity={0.5} />
+        <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
         <XAxis
           dataKey="timestamp"
           angle={-45}
@@ -103,10 +95,12 @@ export function SensorChart({
           interval={Math.ceil(data.length / 10)}
           minTickGap={20}
           tick={{ fontSize: 11 }}
+          stroke="hsl(var(--foreground))"
           label={{
             value: "Time",
             position: "bottom",
             offset: 40,
+            style: { fill: "hsl(var(--foreground))" },
           }}
         />
         <YAxis
@@ -116,10 +110,12 @@ export function SensorChart({
             angle: -90,
             position: "insideLeft",
             offset: 10,
+            style: { fill: "hsl(var(--foreground))" },
           }}
           tick={{ fontSize: 11 }}
           width={60}
           tickCount={10}
+          stroke="hsl(var(--foreground))"
         />
         <Tooltip
           content={<CustomTooltip />}
@@ -153,7 +149,20 @@ export function SensorChart({
             <Area
               type="monotone"
               dataKey={dataKey}
-              fill={`${color}33`}
+              stroke={color}
+              fill={fill}
+              name={title}
+              isAnimationActive={false}
+            />
+          </AreaChart>
+        );
+      default:
+        return (
+          <LineChart {...commonProps}>
+            {commonElements}
+            <Line
+              type="monotone"
+              dataKey={dataKey}
               stroke={color}
               name={title}
               strokeWidth={2}
@@ -161,56 +170,7 @@ export function SensorChart({
               activeDot={{ r: 4, strokeWidth: 2 }}
               isAnimationActive={false}
             />
-          </AreaChart>
-        );
-      case "bar":
-        return (
-          <BarChart {...commonProps}>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              opacity={0.5}
-              vertical={false}
-            />
-            <XAxis
-              dataKey="timestamp"
-              angle={-45}
-              textAnchor="end"
-              height={60}
-              interval={Math.ceil(data.length / 10)}
-              minTickGap={20}
-              tick={{ fontSize: 11 }}
-              label={{
-                value: "Time",
-                position: "bottom",
-                offset: 40,
-              }}
-            />
-            <YAxis
-              domain={domain}
-              label={{
-                value: yAxisLabel,
-                angle: -90,
-                position: "insideLeft",
-                offset: 10,
-              }}
-              tick={{ fontSize: 11 }}
-              width={60}
-              tickCount={10}
-            />
-            <Tooltip
-              content={<CustomTooltip />}
-              cursor={{ fill: "var(--background)", opacity: 0.2 }}
-            />
-            <Legend verticalAlign="top" height={36} />
-            <Bar
-              dataKey={dataKey}
-              name={title}
-              radius={[4, 4, 0, 0]}
-              isAnimationActive={false}
-              fill={color}
-              maxBarSize={40}
-            />
-          </BarChart>
+          </LineChart>
         );
     }
   };

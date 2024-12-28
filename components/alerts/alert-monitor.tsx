@@ -2,12 +2,14 @@
 
 import { useEffect, useRef } from "react";
 import { useAlertStore } from "@/lib/stores/alert-store";
+import { useSettingsStore } from "@/lib/stores/settings-store";
 import { toast } from "sonner";
 import { useSensorData } from "@/hooks/use-sensor-data";
 
 export function AlertMonitor() {
   const { data: realtimeSensors } = useSensorData();
   const alertStore = useAlertStore();
+  const settings = useSettingsStore((state) => state.settings);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const lastCheckedRef = useRef<Record<string, number>>({});
 
@@ -31,6 +33,7 @@ export function AlertMonitor() {
       temperature: realtimeSensors[0].temperature,
       humidity: realtimeSensors[0].humidity,
       pressure: realtimeSensors[0].pressure,
+      distance: realtimeSensors[0].distance,
       timestamp: realtimeSensors[0].timestamp.toDate(),
     };
 
@@ -71,8 +74,8 @@ export function AlertMonitor() {
             lastTriggered: new Date().toISOString(),
           });
 
-          // Play alert sound
-          if (audioRef.current) {
+          // Play alert sound if enabled
+          if (settings.notifications.audio && audioRef.current) {
             audioRef.current.currentTime = 0;
             audioRef.current.play().catch(() => {
               // Ignore autoplay errors
@@ -95,6 +98,8 @@ export function AlertMonitor() {
                 ? "°C"
                 : alert.type === "humidity"
                 ? "%"
+                : alert.type === "distance"
+                ? "cm"
                 : "hPa"
             }`,
             duration: alert.priority === "high" ? 8000 : 5000,
@@ -119,7 +124,7 @@ export function AlertMonitor() {
       // Update last checked value
       lastCheckedRef.current[alert.id] = value;
     });
-  }, [realtimeSensors, alertStore]);
+  }, [realtimeSensors, alertStore, settings.notifications.audio]);
 
   return null;
 }

@@ -1,97 +1,36 @@
 "use client";
+
+import React from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
-import Link, { LinkProps } from "next/link";
-import React, { useState, createContext, useContext } from "react";
-import { AnimatePresence, motion, HTMLMotionProps } from "framer-motion";
 import { IconMenu2, IconX } from "@tabler/icons-react";
 
-interface Links {
-  label: string;
-  href: string;
-  icon: React.JSX.Element | React.ReactNode;
-  className?: string;
-}
-
-interface SidebarContextProps {
-  open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  animate: boolean;
-}
-
-const SidebarContext = createContext<SidebarContextProps | undefined>(
-  undefined
-);
-
-export const useSidebar = () => {
-  const context = useContext(SidebarContext);
-  if (!context) {
-    throw new Error("useSidebar must be used within a SidebarProvider");
-  }
-  return context;
-};
-
-export const SidebarProvider = ({
-  children,
-  open: openProp,
-  setOpen: setOpenProp,
-  animate = true,
-}: {
+interface SidebarProps {
   children: React.ReactNode;
   open?: boolean;
   setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
   animate?: boolean;
-}) => {
-  const [openState, setOpenState] = useState(false);
+  className?: string;
+  showToggle?: boolean;
+}
 
-  const open = openProp !== undefined ? openProp : openState;
-  const setOpen = setOpenProp !== undefined ? setOpenProp : setOpenState;
-
-  return (
-    <SidebarContext.Provider value={{ open, setOpen, animate: animate }}>
-      {children}
-    </SidebarContext.Provider>
-  );
-};
-
-export const Sidebar = ({
+export function Sidebar({
   children,
-  open,
+  open = true,
   setOpen,
-  animate,
-}: {
-  children: React.ReactNode;
-  open?: boolean;
-  setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
-  animate?: boolean;
-}) => {
+  animate = true,
+  className,
+  showToggle = true,
+}: SidebarProps) {
   return (
-    <SidebarProvider open={open} setOpen={setOpen} animate={animate}>
-      {children}
-    </SidebarProvider>
-  );
-};
-
-export const SidebarBody = (props: {
-  className?: string;
-  children?: React.ReactNode;
-}) => {
-  const { open, setOpen, animate } = useSidebar();
-
-  return (
-    <>
-      <motion.div
-        initial={false}
-        animate={{
-          width: open ? "240px" : "72px",
-          transition: {
-            duration: animate ? 0.2 : 0,
-          },
-        }}
-        className={cn(
-          "fixed top-0 left-0 h-screen border-r py-4 px-3 flex flex-col bg-background md:relative md:w-auto",
-          props.className
-        )}
-      >
+    <aside
+      className={cn(
+        "relative h-screen bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800",
+        "flex flex-col p-4",
+        className
+      )}
+    >
+      {showToggle && setOpen && (
         <button
           onClick={() => setOpen(!open)}
           className="absolute -right-3 top-7 z-40 rounded-full border bg-background p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 hidden md:block"
@@ -102,51 +41,44 @@ export const SidebarBody = (props: {
             <IconMenu2 className="h-4 w-4" />
           )}
         </button>
-        {props.children}
-      </motion.div>
-      {/* Mobile overlay */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.4 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setOpen(false)}
-            className="fixed inset-0 z-30 bg-black lg:hidden"
-          />
-        )}
-      </AnimatePresence>
-    </>
+      )}
+      {children}
+    </aside>
   );
-};
-
-interface SidebarLinkProps {
-  link: Omit<Links & LinkProps, "href"> & { href: string };
 }
 
-export const SidebarLink = ({ link }: SidebarLinkProps) => {
-  const { open } = useSidebar();
-  const { href, icon, label, className, ...rest } = link;
+export function SidebarBody({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex flex-col flex-1", className)}>{children}</div>
+  );
+}
 
+interface SidebarLinkProps {
+  link: {
+    href: string;
+    label: string;
+    icon?: React.ReactNode;
+    className?: string;
+  };
+}
+
+export function SidebarLink({ link }: SidebarLinkProps) {
   return (
     <Link
-      href={href}
-      className={cn("flex items-center gap-3 px-3 py-2", className)}
-      {...rest}
+      href={link.href}
+      className={cn(
+        "flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200",
+        link.className
+      )}
     >
-      {icon}
-      <AnimatePresence>
-        {open && (
-          <motion.span
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.1 } }}
-            className="text-sm text-neutral-700 dark:text-neutral-200 hidden md:inline"
-          >
-            {label}
-          </motion.span>
-        )}
-      </AnimatePresence>
+      {link.icon}
+      {link.label && <span>{link.label}</span>}
     </Link>
   );
-};
+}

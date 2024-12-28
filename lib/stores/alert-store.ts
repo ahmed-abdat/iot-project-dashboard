@@ -22,11 +22,17 @@ export const ALERT_DEFAULTS = {
     max: 1100,
     step: 1,
   },
+  distance: {
+    unit: "cm",
+    min: 0,
+    max: 400,
+    step: 1,
+  },
 } as const;
 
 export interface Alert {
   id: string;
-  type: "temperature" | "humidity" | "pressure";
+  type: "temperature" | "humidity" | "pressure" | "distance";
   operator: "above" | "below" | "between";
   threshold: number;
   thresholdHigh?: number;

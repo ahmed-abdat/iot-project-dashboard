@@ -13,6 +13,7 @@ interface SensorData {
   temperature: number;
   humidity: number;
   pressure: number;
+  distance: number;
 }
 
 export function useAlertMonitoring() {

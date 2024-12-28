@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface OverviewChartProps {
   data: SensorData[];
   title: string;
-  type: "temperature" | "humidity" | "pressure";
+  type: "temperature" | "humidity" | "pressure" | "distance";
   isLoading?: boolean;
   error?: Error | null;
 }
@@ -65,7 +65,6 @@ export function OverviewChart({
     return data.map((reading) => ({
       timestamp: format(reading.timestamp.toDate(), "HH:mm:ss"),
       value: reading[type],
-      quality: reading.readingQuality[type],
     }));
   };
 
@@ -77,6 +76,8 @@ export function OverviewChart({
         return [30, 70];
       case "pressure":
         return [950, 1050];
+      case "distance":
+        return [0, 400];
       default:
         return ["auto", "auto"];
     }
@@ -90,6 +91,8 @@ export function OverviewChart({
         return "%";
       case "pressure":
         return "hPa";
+      case "distance":
+        return "cm";
       default:
         return "";
     }

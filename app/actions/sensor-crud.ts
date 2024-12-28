@@ -73,10 +73,10 @@ export async function getSensorStats(): Promise<SensorStats> {
         avgTemperature: 0,
         avgHumidity: 0,
         avgPressure: 0,
+        avgDistance: 0,
         totalReadings: 0,
         activeDevices: 0,
         lastUpdate: Timestamp.now(),
-        readingQuality: { good: 0, warning: 0, error: 0 },
       };
     }
 
@@ -88,28 +88,19 @@ export async function getSensorStats(): Promise<SensorStats> {
         temperature: acc.temperature + curr.temperature,
         humidity: acc.humidity + curr.humidity,
         pressure: acc.pressure + curr.pressure,
+        distance: acc.distance + curr.distance,
       }),
-      { temperature: 0, humidity: 0, pressure: 0 }
-    );
-
-    // Calculate reading quality stats
-    const qualityStats = data.reduce(
-      (acc, curr) => {
-        const quality = curr.readingQuality.temperature; // Using temperature as indicator
-        acc[quality]++;
-        return acc;
-      },
-      { good: 0, warning: 0, error: 0 }
+      { temperature: 0, humidity: 0, pressure: 0, distance: 0 }
     );
 
     return {
       avgTemperature: totals.temperature / totalReadings,
       avgHumidity: totals.humidity / totalReadings,
       avgPressure: totals.pressure / totalReadings,
+      avgDistance: totals.distance / totalReadings,
       totalReadings,
       activeDevices: uniqueDevices.size,
       lastUpdate: Timestamp.now(),
-      readingQuality: qualityStats,
     };
   } catch (error) {
     console.error("Error getting sensor stats:", error);

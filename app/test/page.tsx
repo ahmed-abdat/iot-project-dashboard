@@ -1,14 +1,13 @@
 "use client";
 
+import { useState, useEffect, useCallback } from "react";
+import { Timestamp } from "firebase/firestore";
+import { createSensorData } from "@/app/actions/sensor-crud";
+import { format } from "date-fns";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageContainer } from "@/components/layout/page-container";
-import { useState, useEffect, useCallback } from "react";
-import { Timestamp } from "firebase/firestore";
-import type { ReadingQuality } from "@/types/sensor";
-import { createSensorData } from "@/app/actions/sensor-crud";
-import { format } from "date-fns";
 
 export default function TestPage() {
   const [deviceId, setDeviceId] = useState("esp32-001");
@@ -19,35 +18,14 @@ export default function TestPage() {
 
   // Function to generate random sensor data
   const generateSensorData = useCallback(() => {
-    // Generate base readings
-    const temperature = 20 + Math.random() * 10;
-    const humidity = 40 + Math.random() * 30;
-    const pressure = 1000 + Math.random() * 100;
-
-    // Determine reading quality based on ranges
-    const getQuality = (
-      value: number,
-      min: number,
-      max: number
-    ): ReadingQuality => {
-      if (value < min || value > max) return "error";
-      const buffer = (max - min) * 0.1;
-      if (value < min + buffer || value > max - buffer) return "warning";
-      return "good";
-    };
-
     return {
       deviceId,
-      temperature: Number(temperature.toFixed(1)),
-      humidity: Number(humidity.toFixed(1)),
-      pressure: Number(pressure.toFixed(1)),
+      temperature: Number((20 + Math.random() * 10).toFixed(1)),
+      humidity: Number((40 + Math.random() * 30).toFixed(1)),
+      pressure: Number((1000 + Math.random() * 100).toFixed(1)),
+      distance: Number((50 + Math.random() * 200).toFixed(1)),
       timestamp: Timestamp.now(),
       status: "active" as const,
-      readingQuality: {
-        temperature: getQuality(temperature, 15, 35),
-        humidity: getQuality(humidity, 30, 70),
-        pressure: getQuality(pressure, 950, 1050),
-      },
     };
   }, [deviceId]);
 
@@ -57,21 +35,10 @@ export default function TestPage() {
       deviceId: data.deviceId,
       timestamp: format(data.timestamp.toDate(), "HH:mm:ss"),
       readings: {
-        temperature: {
-          value: data.temperature,
-          unit: "°C",
-          quality: data.readingQuality.temperature,
-        },
-        humidity: {
-          value: data.humidity,
-          unit: "%",
-          quality: data.readingQuality.humidity,
-        },
-        pressure: {
-          value: data.pressure,
-          unit: "hPa",
-          quality: data.readingQuality.pressure,
-        },
+        temperature: data.temperature,
+        humidity: data.humidity,
+        pressure: data.pressure,
+        distance: data.distance,
       },
     }),
     []
