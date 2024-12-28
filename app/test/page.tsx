@@ -8,30 +8,43 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageContainer } from "@/components/layout/page-container";
+import { SENSOR_ERROR_VALUE } from "@/types/sensor";
 
 export default function TestPage() {
   const [deviceId, setDeviceId] = useState("esp32-001");
-  const [interval, setInterval] = useState(5);
-  const [isRunning, setIsRunning] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
-  const [previewData, setPreviewData] = useState("");
+  const [lastData, setLastData] = useState<any>(null);
+  const [autoGenerate, setAutoGenerate] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  // Function to generate random sensor data
+  // Function to generate random sensor data with possible errors
   const generateSensorData = useCallback(() => {
+    // Simulate random sensor errors (10% chance for each sensor)
+    const simulateError = () =>
+      Math.random() < 0.1 ? SENSOR_ERROR_VALUE : null;
+
     return {
       deviceId,
-      temperature: Number((20 + Math.random() * 10).toFixed(1)),
-      humidity: Number((40 + Math.random() * 30).toFixed(1)),
-      pressure: Number((1000 + Math.random() * 100).toFixed(1)),
-      distance: Number((50 + Math.random() * 200).toFixed(1)),
+      temperature:
+        simulateError() ?? Number((20 + Math.random() * 10).toFixed(1)),
+      humidity: simulateError() ?? Number((40 + Math.random() * 30).toFixed(1)),
+      pressure:
+        simulateError() ?? Number((1000 + Math.random() * 100).toFixed(1)),
+      distance:
+        simulateError() ?? Number((50 + Math.random() * 200).toFixed(1)),
       timestamp: Timestamp.now(),
       status: "active" as const,
+      errors: {
+        temperature: simulateError() !== null,
+        humidity: simulateError() !== null,
+        pressure: simulateError() !== null,
+        distance: simulateError() !== null,
+      },
     };
   }, [deviceId]);
 
-  // Format preview info
-  const formatPreviewInfo = useCallback(
-    (data: ReturnType<typeof generateSensorData>) => ({
+  // Function to format the displayed data
+  const formatData = useCallback(
+    (data: any) => ({
       deviceId: data.deviceId,
       timestamp: format(data.timestamp.toDate(), "HH:mm:ss"),
       readings: {
@@ -40,116 +53,71 @@ export default function TestPage() {
         pressure: data.pressure,
         distance: data.distance,
       },
+      errors: data.errors,
     }),
     []
   );
 
-  // Function to send a single reading
-  const sendReading = useCallback(async () => {
+  // Function to generate and send data
+  const generateAndSendData = useCallback(async () => {
     try {
-      setIsCreating(true);
+      setError(null);
       const data = generateSensorData();
-      // Format preview with essential data only
-      const previewInfo = formatPreviewInfo(data);
-      setPreviewData(JSON.stringify(previewInfo, null, 2));
       await createSensorData(data);
-      console.log("Sensor data sent successfully:", data);
-    } catch (error) {
-      console.error("Error sending sensor data:", error);
-    } finally {
-      setIsCreating(false);
-    }
-  }, [generateSensorData, formatPreviewInfo]);
-
-  // Update preview data every second when not sending
-  useEffect(() => {
-    if (!isRunning && !isCreating) {
-      const updatePreview = () => {
-        const data = generateSensorData();
-        const previewInfo = formatPreviewInfo(data);
-        setPreviewData(JSON.stringify(previewInfo, null, 2));
-      };
-
-      updatePreview(); // Initial update
-      const previewInterval = window.setInterval(updatePreview, 1000);
-
-      return () => window.clearInterval(previewInterval);
-    }
-  }, [isRunning, isCreating, generateSensorData, formatPreviewInfo]);
-
-  // Handle continuous readings with useEffect
-  useEffect(() => {
-    let intervalId: number;
-
-    if (isRunning) {
-      // Send initial reading
-      void sendReading();
-      // Set up interval
-      intervalId = window.setInterval(
-        () => void sendReading(),
-        interval * 1000
+      setLastData(formatData(data));
+    } catch (err) {
+      console.error("Error generating data:", err);
+      setError(
+        err instanceof Error ? err : new Error("Failed to generate data")
       );
     }
+  }, [generateSensorData, formatData]);
 
-    return () => {
-      if (intervalId) {
-        window.clearInterval(intervalId);
-      }
-    };
-  }, [isRunning, interval, sendReading]);
+  // Auto-generate data every 5 seconds
+  useEffect(() => {
+    if (!autoGenerate) return;
+
+    const interval = setInterval(generateAndSendData, 5000);
+    return () => clearInterval(interval);
+  }, [autoGenerate, generateAndSendData]);
 
   return (
     <PageContainer
-      title="ESP32 Simulator"
-      description="Test sending sensor data to Firestore"
+      title="Test Data Generator"
+      description="Generate test sensor data with simulated errors"
     >
-      <div className="space-y-6">
-        <Card className="p-6">
+      <div className="space-y-4">
+        <Card className="p-4">
           <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Device ID</label>
+            <div className="flex items-center gap-4">
               <Input
                 value={deviceId}
                 onChange={(e) => setDeviceId(e.target.value)}
-                placeholder="Enter device ID"
+                placeholder="Device ID"
               />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Interval (seconds)</label>
-              <Input
-                type="number"
-                min={1}
-                value={interval}
-                onChange={(e) => setInterval(Number(e.target.value))}
-                disabled={isRunning}
-              />
-            </div>
-
-            <div className="space-x-4">
+              <Button onClick={generateAndSendData}>Generate Data</Button>
               <Button
-                onClick={() => void sendReading()}
-                disabled={isCreating || isRunning}
+                variant={autoGenerate ? "destructive" : "secondary"}
+                onClick={() => setAutoGenerate(!autoGenerate)}
               >
-                Send Single Reading
-              </Button>
-
-              <Button
-                onClick={() => setIsRunning(!isRunning)}
-                variant={isRunning ? "destructive" : "default"}
-              >
-                {isRunning ? "Stop Continuous" : "Start Continuous"}
+                {autoGenerate ? "Stop Auto Generate" : "Start Auto Generate"}
               </Button>
             </div>
 
-            <div className="mt-4">
-              <h3 className="text-lg font-semibold mb-2">
-                Last Generated Values:
-              </h3>
-              <pre className="bg-secondary p-4 rounded-lg overflow-auto max-h-[200px]">
-                {previewData}
-              </pre>
-            </div>
+            {error && (
+              <div className="text-sm text-destructive">
+                Error: {error.message}
+              </div>
+            )}
+
+            {lastData && (
+              <div className="space-y-2">
+                <h3 className="font-medium">Last Generated Data:</h3>
+                <pre className="bg-muted p-4 rounded-lg overflow-auto">
+                  {JSON.stringify(lastData, null, 2)}
+                </pre>
+              </div>
+            )}
           </div>
         </Card>
       </div>

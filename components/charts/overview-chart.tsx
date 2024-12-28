@@ -1,5 +1,9 @@
 import { Card } from "@/components/ui/card";
-import { SensorData } from "@/types/sensor";
+import {
+  SensorData,
+  isSensorError,
+  getSensorDisplayValue,
+} from "@/types/sensor";
 import {
   LineChart,
   Line,
@@ -10,8 +14,11 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { format } from "date-fns";
+import { format, isToday, isYesterday } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import { AlertTriangle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface OverviewChartProps {
   data: SensorData[];
@@ -20,6 +27,54 @@ interface OverviewChartProps {
   isLoading?: boolean;
   error?: Error | null;
 }
+
+const formatTimestamp = (timestamp: Date) => {
+  if (isToday(timestamp)) {
+    return format(timestamp, "HH:mm:ss");
+  } else if (isYesterday(timestamp)) {
+    return `Yesterday ${format(timestamp, "HH:mm")}`;
+  }
+  return format(timestamp, "MMM d, HH:mm");
+};
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const value = payload[0].value;
+    const unit = payload[0].unit;
+    const hasError = isSensorError(value);
+    const time = payload[0].payload?.time;
+
+    return (
+      <div className="bg-background/95 border rounded-lg shadow-lg p-3 text-sm">
+        <p className="font-medium text-foreground">
+          {time ? formatTimestamp(time) : label}
+        </p>
+        <div className="flex items-center gap-2 mt-1">
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: payload[0].color }}
+          />
+          <span
+            className={cn(
+              "text-muted-foreground",
+              hasError && "text-destructive font-medium"
+            )}
+          >
+            {hasError ? (
+              <span className="flex items-center gap-1">
+                <AlertTriangle className="h-4 w-4" />
+                Sensor Error
+              </span>
+            ) : (
+              `${value?.toFixed(1)}${unit}`
+            )}
+          </span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
 
 export function OverviewChart({
   data,
@@ -63,8 +118,11 @@ export function OverviewChart({
 
   const formatData = (data: SensorData[]) => {
     return data.map((reading) => ({
-      timestamp: format(reading.timestamp.toDate(), "HH:mm:ss"),
+      timestamp: formatTimestamp(reading.timestamp.toDate()),
+      time: reading.timestamp.toDate(), // Keep the actual Date object for tooltip
       value: reading[type],
+      // Set to null for error values so they're not plotted
+      displayValue: isSensorError(reading[type]) ? null : reading[type],
     }));
   };
 
@@ -102,16 +160,41 @@ export function OverviewChart({
   const [yMin, yMax] = getYAxisDomain(type);
   const unit = getUnit(type);
 
+  // Calculate error rate
+  const totalPoints = data.length;
+  const errorPoints = data.filter((point) => isSensorError(point[type])).length;
+  const errorRate = totalPoints > 0 ? (errorPoints / totalPoints) * 100 : 0;
+
   return (
     <Card className="p-4">
-      <h3 className="text-lg font-semibold mb-4">{title}</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold">{title}</h3>
+        {errorRate > 0 && (
+          <Badge variant="destructive" className="h-6">
+            <AlertTriangle className="h-3 w-3 mr-1" />
+            {errorRate.toFixed(1)}% Errors
+          </Badge>
+        )}
+      </div>
       <div className="h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={formattedData}>
-            <CartesianGrid strokeDasharray="3 3" />
+            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
             <XAxis
               dataKey="timestamp"
-              label={{ value: "Time", position: "insideBottom", offset: -5 }}
+              angle={-45}
+              textAnchor="end"
+              height={60}
+              interval={Math.ceil(data.length / 10)}
+              minTickGap={20}
+              tick={{ fontSize: 11 }}
+              label={{
+                value: "Time",
+                position: "insideBottom",
+                offset: 40,
+                style: { fill: "hsl(var(--foreground))" },
+              }}
+              stroke="hsl(var(--foreground))"
             />
             <YAxis
               domain={[yMin, yMax]}
@@ -120,19 +203,25 @@ export function OverviewChart({
                 angle: -90,
                 position: "insideLeft",
                 offset: 10,
+                style: { fill: "hsl(var(--foreground))" },
               }}
+              stroke="hsl(var(--foreground))"
             />
             <Tooltip
-              formatter={(value: number) => [`${value} ${unit}`, "Value"]}
+              content={<CustomTooltip />}
+              cursor={{ strokeDasharray: "3 3" }}
             />
             <Legend />
             <Line
               type="monotone"
-              dataKey="value"
-              stroke="#2563eb"
+              dataKey="displayValue"
+              stroke="hsl(var(--primary))"
               strokeWidth={2}
-              dot={false}
+              dot={{ r: 2, strokeWidth: 2 }}
+              activeDot={{ r: 4, strokeWidth: 2 }}
               name={title}
+              unit={unit}
+              connectNulls
             />
           </LineChart>
         </ResponsiveContainer>

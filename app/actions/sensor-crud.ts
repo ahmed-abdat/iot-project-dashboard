@@ -22,6 +22,7 @@ import {
   PaginationParams,
 } from "@/types/sensor";
 import { COLLECTIONS } from "@/config/firebase-constants";
+import { isSensorError, SENSOR_ERROR_VALUE } from "@/types/sensor";
 
 // Create new sensor data
 export async function createSensorData(data: SensorDataInput): Promise<string> {
@@ -52,23 +53,20 @@ export async function createSensorData(data: SensorDataInput): Promise<string> {
 // Get sensor statistics
 export async function getSensorStats(): Promise<SensorStats> {
   try {
-    const querySnapshot = await getDocs(
-      query(
-        collection(db, COLLECTIONS.SENSOR_DATA),
-        where("status", "==", "active"),
-        orderBy("timestamp", "desc"),
-        limit(100)
-      )
+    const q = query(
+      collection(db, COLLECTIONS.SENSOR_DATA),
+      where("status", "==", "active"),
+      orderBy("timestamp", "desc"),
+      limit(100)
     );
 
-    const data = querySnapshot.docs.map((doc) => ({
+    const snapshot = await getDocs(q);
+    const data = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     })) as SensorData[];
 
-    const totalReadings = data.length;
-
-    if (totalReadings === 0) {
+    if (!data.length) {
       return {
         avgTemperature: 0,
         avgHumidity: 0,
@@ -77,30 +75,80 @@ export async function getSensorStats(): Promise<SensorStats> {
         totalReadings: 0,
         activeDevices: 0,
         lastUpdate: Timestamp.now(),
+        errorCounts: {
+          temperature: 0,
+          humidity: 0,
+          pressure: 0,
+          distance: 0,
+        },
       };
     }
 
     const uniqueDevices = new Set(data.map((d) => d.deviceId));
+    const totalReadings = data.length;
 
-    // Calculate averages
-    const totals = data.reduce(
+    // Count errors
+    const errorCounts = data.reduce(
       (acc, curr) => ({
-        temperature: acc.temperature + curr.temperature,
-        humidity: acc.humidity + curr.humidity,
-        pressure: acc.pressure + curr.pressure,
-        distance: acc.distance + curr.distance,
+        temperature:
+          acc.temperature + (isSensorError(curr.temperature) ? 1 : 0),
+        humidity: acc.humidity + (isSensorError(curr.humidity) ? 1 : 0),
+        pressure: acc.pressure + (isSensorError(curr.pressure) ? 1 : 0),
+        distance: acc.distance + (isSensorError(curr.distance) ? 1 : 0),
       }),
       { temperature: 0, humidity: 0, pressure: 0, distance: 0 }
     );
 
+    // Calculate averages excluding error values
+    const totals = data.reduce(
+      (acc, curr) => ({
+        temperature:
+          acc.temperature +
+          (isSensorError(curr.temperature) ? 0 : curr.temperature),
+        humidity:
+          acc.humidity + (isSensorError(curr.humidity) ? 0 : curr.humidity),
+        pressure:
+          acc.pressure + (isSensorError(curr.pressure) ? 0 : curr.pressure),
+        distance:
+          acc.distance + (isSensorError(curr.distance) ? 0 : curr.distance),
+        validTemperature:
+          acc.validTemperature + (isSensorError(curr.temperature) ? 0 : 1),
+        validHumidity:
+          acc.validHumidity + (isSensorError(curr.humidity) ? 0 : 1),
+        validPressure:
+          acc.validPressure + (isSensorError(curr.pressure) ? 0 : 1),
+        validDistance:
+          acc.validDistance + (isSensorError(curr.distance) ? 0 : 1),
+      }),
+      {
+        temperature: 0,
+        humidity: 0,
+        pressure: 0,
+        distance: 0,
+        validTemperature: 0,
+        validHumidity: 0,
+        validPressure: 0,
+        validDistance: 0,
+      }
+    );
+
     return {
-      avgTemperature: totals.temperature / totalReadings,
-      avgHumidity: totals.humidity / totalReadings,
-      avgPressure: totals.pressure / totalReadings,
-      avgDistance: totals.distance / totalReadings,
+      avgTemperature: totals.validTemperature
+        ? totals.temperature / totals.validTemperature
+        : 0,
+      avgHumidity: totals.validHumidity
+        ? totals.humidity / totals.validHumidity
+        : 0,
+      avgPressure: totals.validPressure
+        ? totals.pressure / totals.validPressure
+        : 0,
+      avgDistance: totals.validDistance
+        ? totals.distance / totals.validDistance
+        : 0,
       totalReadings,
       activeDevices: uniqueDevices.size,
       lastUpdate: Timestamp.now(),
+      errorCounts,
     };
   } catch (error) {
     console.error("Error getting sensor stats:", error);

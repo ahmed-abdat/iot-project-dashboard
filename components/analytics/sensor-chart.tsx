@@ -1,40 +1,35 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   LineChart,
   Line,
   AreaChart,
   Area,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   Legend,
+  ReferenceLine,
 } from "recharts";
 import { format, isToday, isYesterday } from "date-fns";
 import { useSettingsStore } from "@/lib/stores/settings-store";
-
-type ChartType = "line" | "area" | "bar";
+import { isSensorError, getSensorDisplayValue } from "@/types/sensor";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { AlertTriangle } from "lucide-react";
 
 interface SensorChartProps {
   title: string;
   data: any[];
-  type: ChartType;
+  type: "line" | "area";
   dataKey: string;
   yAxisLabel: string;
   color: string;
   fill?: string;
   domain?: [number | "auto", number | "auto"];
-}
-
-interface ChartDataPoint {
-  timestamp: string;
-  time: Date;
-  value: number;
 }
 
 const formatTimestamp = (timestamp: Date) => {
@@ -48,20 +43,37 @@ const formatTimestamp = (timestamp: Date) => {
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
+    const value = payload[0].value;
+    const unit = payload[0].unit || "";
+    const hasError = payload[0].payload?.errors?.[payload[0].dataKey];
+    const time = payload[0].payload?.time;
+
     return (
       <div className="bg-background/95 border rounded-lg shadow-lg p-3 text-sm">
-        <p className="font-medium text-foreground">{label}</p>
-        {payload.map((entry: any) => (
-          <div key={entry.name} className="flex items-center gap-2 mt-1">
-            <div
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className="text-muted-foreground">
-              {entry.name}: {entry.value.toFixed(1)} {entry.unit}
-            </span>
-          </div>
-        ))}
+        <p className="font-medium text-foreground">
+          {time ? formatTimestamp(time) : label}
+        </p>
+        <div className="flex items-center gap-2 mt-1">
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: payload[0].color }}
+          />
+          <span
+            className={cn(
+              "text-muted-foreground",
+              hasError && "text-destructive font-medium"
+            )}
+          >
+            {hasError ? (
+              <span className="flex items-center gap-1">
+                <AlertTriangle className="h-4 w-4" />
+                Sensor Error
+              </span>
+            ) : (
+              `${value?.toFixed(1)}${unit}`
+            )}
+          </span>
+        </div>
       </div>
     );
   }
@@ -78,10 +90,17 @@ export function SensorChart({
   fill,
   domain = ["auto", "auto"],
 }: SensorChartProps) {
+  // Calculate error rate
+  const totalPoints = data.length;
+  const errorPoints = data.filter((point) => point.errors?.[dataKey]).length;
+  const errorRate = totalPoints > 0 ? (errorPoints / totalPoints) * 100 : 0;
+
   const renderChart = () => {
     const commonProps = {
+      width: 500,
+      height: 300,
       data,
-      margin: { top: 10, right: 30, left: 10, bottom: 50 },
+      margin: { top: 20, right: 20, bottom: 60, left: 60 },
     };
 
     const commonElements = (
@@ -126,22 +145,6 @@ export function SensorChart({
     );
 
     switch (type) {
-      case "line":
-        return (
-          <LineChart {...commonProps}>
-            {commonElements}
-            <Line
-              type="monotone"
-              dataKey={dataKey}
-              stroke={color}
-              name={title}
-              strokeWidth={2}
-              dot={{ r: 1, strokeWidth: 1, fill: color }}
-              activeDot={{ r: 4, strokeWidth: 2 }}
-              isAnimationActive={false}
-            />
-          </LineChart>
-        );
       case "area":
         return (
           <AreaChart {...commonProps}>
@@ -153,6 +156,7 @@ export function SensorChart({
               fill={fill}
               name={title}
               isAnimationActive={false}
+              connectNulls
             />
           </AreaChart>
         );
@@ -169,6 +173,7 @@ export function SensorChart({
               dot={{ r: 1, strokeWidth: 1, fill: color }}
               activeDot={{ r: 4, strokeWidth: 2 }}
               isAnimationActive={false}
+              connectNulls
             />
           </LineChart>
         );
@@ -176,11 +181,23 @@ export function SensorChart({
   };
 
   return (
-    <Card className="p-4">
-      <h2 className="text-lg font-semibold mb-4">{title}</h2>
-      <div className="h-[300px]">
-        <ResponsiveContainer>{renderChart()}</ResponsiveContainer>
-      </div>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>{title}</CardTitle>
+        {errorRate > 0 && (
+          <Badge variant="destructive" className="h-6">
+            <AlertTriangle className="h-3 w-3 mr-1" />
+            {errorRate.toFixed(1)}% Errors
+          </Badge>
+        )}
+      </CardHeader>
+      <CardContent className="pt-4">
+        <div className="h-[300px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            {renderChart()}
+          </ResponsiveContainer>
+        </div>
+      </CardContent>
     </Card>
   );
 }

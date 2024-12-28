@@ -14,12 +14,14 @@ import {
 import { useState } from "react";
 import { differenceInHours, format, isToday } from "date-fns";
 import type { SensorData } from "@/types/sensor";
+import { isSensorError, SENSOR_ERROR_VALUE } from "@/types/sensor";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import {
   convertTemperature,
   convertPressure,
 } from "@/lib/utils/unit-conversions";
 import type { Settings } from "@/lib/stores/settings-store";
+import type { ChartData } from "@/types/analytics";
 
 const timeRanges = [
   { label: "Last Hour", value: "1", maxPoints: 30 }, // One point per 2 minutes
@@ -136,41 +138,42 @@ const filterAnalyticsData = (
 // Format data for charts
 const formatChartData = (
   data: SensorData[],
-  timeRange: string,
   settings: Settings
-) => {
-  const getTimeFormat = (date: Date, timeRange: string) => {
-    switch (timeRange) {
-      case "1": // Last Hour
-        return "HH:mm:ss";
-      case "6": // Last 6 Hours
-        return "HH:mm";
-      case "24": // Last 24 Hours
-        return isToday(date) ? "HH:mm" : "MMM d, HH:mm";
-      case "168": // Last 7 Days
-        return "MMM d, HH:mm";
-      default:
-        return "HH:mm";
-    }
-  };
-
+): ChartData[] => {
   return data.map((item) => {
-    const date = item.timestamp.toDate();
-    const timeFormat = getTimeFormat(date, timeRange);
+    // Convert timestamp to Date for better handling
+    const time = item.timestamp.toDate();
+
     return {
-      timestamp: format(date, timeFormat),
-      time: date,
-      temperature: Number(
-        convertTemperature(
-          item.temperature,
-          settings.units.temperature
-        ).toFixed(1)
-      ),
-      humidity: Number(item.humidity.toFixed(1)),
-      pressure: Number(
-        convertPressure(item.pressure, settings.units.pressure).toFixed(1)
-      ),
-      distance: Number(item.distance.toFixed(1)),
+      timestamp: format(time, "HH:mm:ss"),
+      time,
+      // Handle error values by setting them to null for the chart
+      temperature: isSensorError(item.temperature)
+        ? null
+        : Number(
+            convertTemperature(
+              item.temperature,
+              settings.units.temperature
+            ).toFixed(1)
+          ),
+      humidity: isSensorError(item.humidity)
+        ? null
+        : Number(item.humidity.toFixed(1)),
+      pressure: isSensorError(item.pressure)
+        ? null
+        : Number(
+            convertPressure(item.pressure, settings.units.pressure).toFixed(1)
+          ),
+      distance: isSensorError(item.distance)
+        ? null
+        : Number(item.distance.toFixed(1)),
+      // Add error flags for UI indicators
+      errors: {
+        temperature: isSensorError(item.temperature),
+        humidity: isSensorError(item.humidity),
+        pressure: isSensorError(item.pressure),
+        distance: isSensorError(item.distance),
+      },
     };
   });
 };
@@ -223,11 +226,7 @@ export default function AnalyticsPage() {
 
   // Filter and format the data
   const data = rawData
-    ? formatChartData(
-        filterAnalyticsData(rawData, timeRange),
-        timeRange,
-        settings
-      )
+    ? formatChartData(filterAnalyticsData(rawData, timeRange), settings)
     : [];
 
   if (isLoading) {
