@@ -63,15 +63,10 @@ export default function AlertsPage() {
     deleteAlert,
     toggleAlert,
   } = useAlerts();
-  const alertStore = useAlertStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingAlert, setEditingAlert] = useState<Alert | null>(null);
   const [deletingAlertId, setDeletingAlertId] = useState<string | null>(null);
-
-  useEffect(() => {
-    alertStore.initialize();
-  }, [alertStore]);
 
   if (loading) {
     return (
