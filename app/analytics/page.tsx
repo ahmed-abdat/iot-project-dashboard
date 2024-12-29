@@ -144,29 +144,44 @@ const formatChartData = (
     // Convert timestamp to Date for better handling
     const time = item.timestamp.toDate();
 
-    return {
-      timestamp: format(time, "HH:mm:ss"),
-      time,
-      // Handle error values by setting them to null for the chart
-      temperature: isSensorError(item.temperature)
+    // Safely convert temperature
+    const temperature =
+      isSensorError(item.temperature) || item.temperature == null
         ? null
         : Number(
             convertTemperature(
               item.temperature,
               settings.units.temperature
             ).toFixed(1)
-          ),
-      humidity: isSensorError(item.humidity)
+          );
+
+    // Safely convert humidity
+    const humidity =
+      isSensorError(item.humidity) || item.humidity == null
         ? null
-        : Number(item.humidity.toFixed(1)),
-      pressure: isSensorError(item.pressure)
+        : Number(item.humidity.toFixed(1));
+
+    // Safely convert pressure
+    const pressure =
+      isSensorError(item.pressure) || item.pressure == null
         ? null
         : Number(
             convertPressure(item.pressure, settings.units.pressure).toFixed(1)
-          ),
-      distance: isSensorError(item.distance)
+          );
+
+    // Safely convert distance
+    const distance =
+      isSensorError(item.distance) || item.distance == null
         ? null
-        : Number(item.distance.toFixed(1)),
+        : Number(item.distance.toFixed(1));
+
+    return {
+      timestamp: format(time, "HH:mm:ss"),
+      time,
+      temperature,
+      humidity,
+      pressure,
+      distance,
       // Add error flags for UI indicators
       errors: {
         temperature: isSensorError(item.temperature),
