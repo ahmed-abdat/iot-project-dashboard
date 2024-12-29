@@ -32,22 +32,43 @@ export function OverviewChart({ data }: OverviewChartProps) {
   const settings = useSettingsStore((state) => state.settings);
 
   // Convert data based on selected units
-  const chartData = data.map((reading) => ({
-    name: new Date(
-      reading.timestamp?.toMillis?.() || Date.now()
-    ).toLocaleTimeString(),
-    temperature: Number(
-      convertTemperature(
-        reading.temperature,
-        settings.units.temperature
-      ).toFixed(1)
-    ),
-    humidity: Number(reading.humidity.toFixed(1)),
-    pressure: Number(
-      convertPressure(reading.pressure, settings.units.pressure).toFixed(1)
-    ),
-  }));
+  const chartData = data.map((reading) => {
+    // Get timestamp
+    const timestamp = reading.timestamp?.toMillis?.() || Date.now();
+    const time = new Date(timestamp).toLocaleTimeString();
 
+    // Safely convert temperature
+    const temperature =
+      reading.temperature != null
+        ? Number(
+            convertTemperature(
+              reading.temperature,
+              settings.units.temperature
+            ).toFixed(1)
+          )
+        : null;
+
+    // Safely convert humidity
+    const humidity =
+      reading.humidity != null ? Number(reading.humidity.toFixed(1)) : null;
+
+    // Safely convert pressure
+    const pressure =
+      reading.pressure != null
+        ? Number(
+            convertPressure(reading.pressure, settings.units.pressure).toFixed(
+              1
+            )
+          )
+        : null;
+
+    return {
+      name: time,
+      temperature,
+      humidity,
+      pressure,
+    };
+  });
 
   if (!data || data.length === 0) {
     return (
@@ -68,25 +89,37 @@ export function OverviewChart({ data }: OverviewChartProps) {
       return (
         <div className="rounded-lg border bg-background p-2 shadow-sm">
           <div className="text-sm font-medium">{label}</div>
-          {payload.map((item: any) => (
-            <div key={item.dataKey} className="flex items-center gap-2 text-sm">
+          {payload.map((item: any) => {
+            // Skip rendering if value is undefined or null
+            if (item.value == null) return null;
+
+            // Safely format the value
+            const formattedValue =
+              typeof item.value === "number" ? item.value.toFixed(1) : "---";
+
+            return (
               <div
-                className="h-2 w-2 rounded-full"
-                style={{ backgroundColor: item.stroke }}
-              />
-              <span className="capitalize">{item.name}:</span>
-              <span className="font-medium">
-                {item.value.toFixed(1)}
-                {item.dataKey === "temperature"
-                  ? settings.units.temperature === "celsius"
-                    ? "°C"
-                    : "°F"
-                  : item.dataKey === "humidity"
-                  ? "%"
-                  : ` ${settings.units.pressure}`}
-              </span>
-            </div>
-          ))}
+                key={item.dataKey}
+                className="flex items-center gap-2 text-sm"
+              >
+                <div
+                  className="h-2 w-2 rounded-full"
+                  style={{ backgroundColor: item.stroke }}
+                />
+                <span className="capitalize">{item.name}:</span>
+                <span className="font-medium">
+                  {formattedValue}
+                  {item.dataKey === "temperature"
+                    ? settings.units.temperature === "celsius"
+                      ? "°C"
+                      : "°F"
+                    : item.dataKey === "humidity"
+                    ? "%"
+                    : ` ${settings.units.pressure}`}
+                </span>
+              </div>
+            );
+          })}
         </div>
       );
     }

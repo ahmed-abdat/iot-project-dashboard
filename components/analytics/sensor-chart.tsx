@@ -69,8 +69,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                 <AlertTriangle className="h-4 w-4" />
                 Sensor Error
               </span>
+            ) : value == null ? (
+              "---"
             ) : (
-              `${value?.toFixed(1)}${unit}`
+              `${value.toFixed(1)}${unit}`
             )}
           </span>
         </div>
@@ -99,7 +101,10 @@ export function SensorChart({
     const commonProps = {
       width: 500,
       height: 300,
-      data,
+      data: data.map((point) => ({
+        ...point,
+        [dataKey]: point[dataKey] != null ? Number(point[dataKey]) : null,
+      })),
       margin: { top: 20, right: 20, bottom: 60, left: 60 },
     };
 
