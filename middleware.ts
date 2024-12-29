@@ -11,7 +11,6 @@ export function middleware(request: NextRequest) {
     if (authSession) {
       const sessionData = JSON.parse(authSession.value);
       isAuthenticated = sessionData.isAuthenticated || false;
-      console.log("Auth state:", { isAuthenticated, sessionData });
     }
   } catch (error) {
     console.error("Error parsing auth session:", error);
@@ -20,9 +19,6 @@ export function middleware(request: NextRequest) {
   // Allow access to login page only if not authenticated
   if (pathname === "/login") {
     if (isAuthenticated) {
-      console.log(
-        "Authenticated user trying to access login, redirecting to home"
-      );
       return NextResponse.redirect(new URL("/", request.url));
     }
     return NextResponse.next();

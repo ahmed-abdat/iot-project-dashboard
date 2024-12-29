@@ -48,10 +48,6 @@ export function OverviewChart({ data }: OverviewChartProps) {
     ),
   }));
 
-  console.log("Chart data with units:", {
-    data: chartData,
-    units: settings.units,
-  });
 
   if (!data || data.length === 0) {
     return (
@@ -118,6 +114,9 @@ export function OverviewChart({ data }: OverviewChartProps) {
             <XAxis dataKey="name" />
             <YAxis
               yAxisId="left"
+              width={60}
+              tickCount={5}
+              stroke="currentColor"
               label={{
                 value: `Temperature (${
                   settings.units.temperature === "celsius" ? "°C" : "°F"
@@ -129,6 +128,9 @@ export function OverviewChart({ data }: OverviewChartProps) {
             <YAxis
               yAxisId="right"
               orientation="right"
+              width={60}
+              tickCount={5}
+              stroke="currentColor"
               label={{
                 value: `Pressure (${settings.units.pressure})`,
                 angle: 90,

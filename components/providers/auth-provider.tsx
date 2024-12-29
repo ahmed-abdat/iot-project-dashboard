@@ -31,7 +31,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Handle initial auth state
   useEffect(() => {
     if (isAuthenticated && pathname === "/login") {
-      console.log("Already authenticated, redirecting to dashboard...");
       router.replace("/");
     }
   }, [isAuthenticated, pathname, router]);
@@ -39,10 +38,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Handle Firebase auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log("Auth state changed:", {
-        user: user?.email,
-        isAuthenticated,
-      });
       setUser(user);
       setStoreUser(user);
       setIsLoading(false);
