@@ -29,18 +29,16 @@ export function useAuth() {
   const login = async (formData: LoginFormData) => {
     try {
       setIsLoading(true);
-      console.log("Starting login process...");
 
       const result = await signInWithEmailAndPassword(
         auth,
         formData.email,
         formData.password
       );
-      console.log("Firebase auth successful:", result.user.email);
 
       // Set user in store and cookie
       setUser(result.user);
-      console.log("User set in store and cookie, redirecting...");
+      
 
       toast.success("Welcome back! Redirecting to dashboard...");
 
