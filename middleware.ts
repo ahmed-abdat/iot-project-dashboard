@@ -29,8 +29,6 @@ export function middleware(request: NextRequest) {
     console.log("Unauthenticated user, redirecting to login");
     return NextResponse.redirect(new URL("/login", request.url));
   }
-
-  console.log("Auth check passed, proceeding to:", pathname);
   return NextResponse.next();
 }
 

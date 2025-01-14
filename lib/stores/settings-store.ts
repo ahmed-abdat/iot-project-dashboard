@@ -15,6 +15,7 @@ export interface Settings {
   notifications: {
     enabled: boolean;
     email: string;
+    emailVerified: boolean;
     audio: boolean;
   };
   updateInterval: number;
@@ -41,6 +42,7 @@ const DEFAULT_SETTINGS: Settings = {
   notifications: {
     enabled: false,
     email: "",
+    emailVerified: false,
     audio: true,
   },
   updateInterval: 300, // 5 minutes in seconds

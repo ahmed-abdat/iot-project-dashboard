@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import {
   Moon,
@@ -12,6 +12,7 @@ import {
   Save,
   Settings2,
   Loader2,
+  CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -36,6 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { verifyEmail } from "@/app/actions/send-email";
 
 export function SettingsView() {
   const { theme, setTheme } = useTheme();
@@ -49,21 +51,62 @@ export function SettingsView() {
   } = useSettingsStore();
 
   const [isSaving, setIsSaving] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+
+  // Check URL parameters for verification status
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get("verified") === "true") {
+      setNotifications({
+        ...settings.notifications,
+        emailVerified: true,
+      });
+      toast.success("Email verified successfully!");
+      // Clean up URL
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+    if (searchParams.get("error")) {
+      toast.error(searchParams.get("error"));
+      // Clean up URL
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [settings.notifications, setNotifications]);
 
   const handleThemeChange = (newTheme: typeof settings.theme) => {
     setTheme(newTheme);
     setStoreTheme(newTheme);
   };
 
-  const handleEmailToggle = (enabled: boolean) => {
+  const handleEmailToggle = async (enabled: boolean) => {
     setNotifications({ ...settings.notifications, enabled });
-    if (enabled) {
+    if (enabled && !settings.notifications.email) {
       toast.info("Please enter your email address");
     }
   };
 
   const handleEmailChange = (email: string) => {
     setNotifications({ ...settings.notifications, email });
+  };
+
+  const handleVerifyEmail = async () => {
+    if (!settings.notifications.email) {
+      toast.error("Please enter an email address");
+      return;
+    }
+
+    setIsVerifying(true);
+    try {
+      await verifyEmail(settings.notifications.email);
+      toast.success("Verification email sent! Please check your inbox.");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to send verification email"
+      );
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   const handleSave = async () => {
@@ -248,40 +291,75 @@ export function SettingsView() {
                   <div className="space-y-2">
                     <Label>Email Address</Label>
                     <div className="flex gap-2">
-                      <div className="flex-1">
-                        <Input
-                          type="email"
-                          placeholder="Enter your email"
-                          value={settings.notifications.email}
-                          onChange={(e) => handleEmailChange(e.target.value)}
-                        />
-                      </div>
+                      <Input
+                        type="email"
+                        placeholder="Enter your email"
+                        value={settings.notifications.email}
+                        onChange={(e) => handleEmailChange(e.target.value)}
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={handleVerifyEmail}
+                        disabled={
+                          isVerifying ||
+                          !settings.notifications.email ||
+                          settings.notifications.emailVerified
+                        }
+                      >
+                        {isVerifying ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Verifying...
+                          </>
+                        ) : settings.notifications.emailVerified ? (
+                          <>
+                            <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                            Verified
+                          </>
+                        ) : (
+                          <>
+                            <Mail className="mr-2 h-4 w-4" />
+                            Verify Email
+                          </>
+                        )}
+                      </Button>
                     </div>
+                    <p className="text-sm text-muted-foreground">
+                      {settings.notifications.emailVerified
+                        ? "Your email is verified and ready to receive notifications"
+                        : "You'll need to verify your email address to receive notifications"}
+                    </p>
                   </div>
                 )}
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Audio Alerts</Label>
+                    <Label>Sound Alerts</Label>
                     <p className="text-sm text-muted-foreground">
-                      Play a sound when sensor values are out of range
+                      Play a sound when alerts are triggered
                     </p>
                   </div>
                   <Switch
                     checked={settings.notifications.audio}
-                    onCheckedChange={(checked) =>
-                      setNotifications({
-                        ...settings.notifications,
-                        audio: checked,
-                      })
+                    onCheckedChange={(audio) =>
+                      setNotifications({ ...settings.notifications, audio })
                     }
                   />
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end">
                 <Button onClick={handleSave} disabled={isSaving}>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Changes
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Changes
+                    </>
+                  )}
                 </Button>
               </CardFooter>
             </Card>
