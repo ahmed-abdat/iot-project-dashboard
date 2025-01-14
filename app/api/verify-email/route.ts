@@ -1,51 +1,62 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/config/firebase";
 
+// Mark this route as dynamic
+export const dynamic = "force-dynamic";
+export const runtime = "edge";
+
 export async function GET(request: NextRequest) {
   try {
+    // Get the token from the URL
     const token = request.nextUrl.searchParams.get("token");
+    
     if (!token) {
-      return NextResponse.json(
-        { error: "Verification token is required" },
-        { status: 400 }
+      return Response.redirect(
+        `${process.env.NEXT_PUBLIC_APP_URL}/settings?error=Invalid verification link`
       );
     }
 
     // Decode the email from the token
     const email = Buffer.from(token, "base64").toString();
-
-    // Get reference to the user settings document
+    
+    // Reference to the user settings document
     const userSettingsRef = doc(db, "user-settings", email);
 
-    // Check if document exists
-    const docSnap = await getDoc(userSettingsRef);
+    try {
+      // Check if document exists
+      const docSnap = await getDoc(userSettingsRef);
 
-    if (!docSnap.exists()) {
-      // Create new document if it doesn't exist
-      await setDoc(userSettingsRef, {
-        email,
-        emailVerified: true,
-        verifiedAt: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-      });
-    } else {
-      // Update existing document
-      await updateDoc(userSettingsRef, {
-        emailVerified: true,
-        verifiedAt: new Date().toISOString(),
-      });
+      if (!docSnap.exists()) {
+        // Create new document if it doesn't exist
+        await setDoc(userSettingsRef, {
+          email,
+          emailVerified: true,
+          verifiedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+        });
+      } else {
+        // Update existing document
+        await updateDoc(userSettingsRef, {
+          emailVerified: true,
+          verifiedAt: new Date().toISOString(),
+        });
+      }
+
+      // Redirect to settings page with success message
+      return Response.redirect(
+        `${process.env.NEXT_PUBLIC_APP_URL}/settings?verified=true`
+      );
+    } catch (error) {
+      console.error("Error updating Firestore:", error);
+      return Response.redirect(
+        `${process.env.NEXT_PUBLIC_APP_URL}/settings?error=Failed to verify email`
+      );
     }
-
-    // Redirect to the settings page with a success message
-    const redirectUrl = new URL("/settings", process.env.NEXT_PUBLIC_APP_URL);
-    redirectUrl.searchParams.set("verified", "true");
-    return NextResponse.redirect(redirectUrl.toString());
   } catch (error) {
     console.error("Error verifying email:", error);
-    // Redirect to settings page with error message
-    const redirectUrl = new URL("/settings", process.env.NEXT_PUBLIC_APP_URL);
-    redirectUrl.searchParams.set("error", "Failed to verify email");
-    return NextResponse.redirect(redirectUrl.toString());
+    return Response.redirect(
+      `${process.env.NEXT_PUBLIC_APP_URL}/settings?error=Invalid verification link`
+    );
   }
 }

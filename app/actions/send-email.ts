@@ -29,6 +29,16 @@ export async function verifyEmail(email: string) {
       );
     }
 
+    if (!process.env.NEXT_PUBLIC_APP_URL) {
+      throw new EmailVerificationError(
+        "Application URL is not configured",
+        "CONFIG_ERROR"
+      );
+    }
+
+    const verificationToken = generateVerificationToken(validatedEmail);
+    const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/verify-email?token=${verificationToken}`;
+
     // Send verification email
     const { data, error } = await resend.emails.send({
       from: "onboarding@resend.dev",
@@ -39,11 +49,7 @@ export async function verifyEmail(email: string) {
           <h1 style="color: #333; text-align: center;">Verify your email</h1>
           <p style="color: #666; line-height: 1.5;">Click the button below to verify your email address for IoT Project notifications:</p>
           <div style="text-align: center; margin: 24px 0;">
-            <a href="${
-              process.env.NEXT_PUBLIC_APP_URL
-            }/api/verify-email?token=${generateVerificationToken(
-        validatedEmail
-      )}" 
+            <a href="${verificationUrl}" 
                style="background-color: #0070f3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
               Verify Email
             </a>
@@ -75,14 +81,13 @@ export async function verifyEmail(email: string) {
 
       if (error.message.includes("rate limit")) {
         throw new EmailVerificationError(
-          "Too many attempts. Please wait a few minutes and try again.",
+          "Too many attempts. Please wait a few minutes before trying again.",
           "RATE_LIMIT"
         );
       }
 
       // Log the error for debugging in production
       if (process.env.NODE_ENV === "production") {
-        // Here you would typically log to your error tracking service
         console.error("Email verification error:", {
           error: error.message,
           email: validatedEmail,
@@ -127,7 +132,5 @@ export async function verifyEmail(email: string) {
 
 // Helper function to generate a verification token
 function generateVerificationToken(email: string) {
-  // In a real application, you would use a proper token generation library
-  // and store the token in a database with an expiration time
   return Buffer.from(email).toString("base64");
 }
