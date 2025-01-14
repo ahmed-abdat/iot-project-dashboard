@@ -5,14 +5,14 @@ import { useAlertStore, type Alert } from "@/lib/stores/alert-store";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import {
   convertTemperature,
-  convertPressure,
+  convertGasLevel,
 } from "@/lib/utils/unit-conversions";
 import { toast } from "sonner";
 
 interface SensorData {
   temperature: number;
   humidity: number;
-  pressure: number;
+  gasLevel: number;
   distance: number;
 }
 
@@ -27,8 +27,8 @@ export function useAlertMonitoring() {
       switch (alert.type) {
         case "temperature":
           return convertTemperature(value, settings.units.temperature);
-        case "pressure":
-          return convertPressure(value, settings.units.pressure);
+        case "gasLevel":
+          return convertGasLevel(value, settings.units.gasLevel);
         default:
           return value;
       }

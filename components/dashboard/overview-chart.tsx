@@ -19,10 +19,7 @@ import {
 } from "recharts";
 import type { SensorData } from "@/types/sensor";
 import { useSettingsStore } from "@/lib/stores/settings-store";
-import {
-  convertTemperature,
-  convertPressure,
-} from "@/lib/utils/unit-conversions";
+import { convertTemperature } from "@/lib/utils/unit-conversions";
 
 interface OverviewChartProps {
   data: SensorData[];
@@ -52,21 +49,15 @@ export function OverviewChart({ data }: OverviewChartProps) {
     const humidity =
       reading.humidity != null ? Number(reading.humidity.toFixed(1)) : null;
 
-    // Safely convert pressure
-    const pressure =
-      reading.pressure != null
-        ? Number(
-            convertPressure(reading.pressure, settings.units.pressure).toFixed(
-              1
-            )
-          )
-        : null;
+    // Safely convert gas level
+    const gasLevel =
+      reading.gasLevel != null ? Number(reading.gasLevel.toFixed(1)) : null;
 
     return {
       name: time,
       temperature,
       humidity,
-      pressure,
+      gasLevel,
     };
   });
 
@@ -113,9 +104,9 @@ export function OverviewChart({ data }: OverviewChartProps) {
                     ? settings.units.temperature === "celsius"
                       ? "°C"
                       : "°F"
-                    : item.dataKey === "humidity"
+                    : item.dataKey === "humidity" || item.dataKey === "gasLevel"
                     ? "%"
-                    : ` ${settings.units.pressure}`}
+                    : ""}
                 </span>
               </div>
             );
@@ -165,7 +156,7 @@ export function OverviewChart({ data }: OverviewChartProps) {
               tickCount={5}
               stroke="currentColor"
               label={{
-                value: `Pressure (${settings.units.pressure})`,
+                value: "Gas Level (%)",
                 angle: 90,
                 position: "insideRight",
               }}
@@ -195,9 +186,9 @@ export function OverviewChart({ data }: OverviewChartProps) {
             <Line
               yAxisId="right"
               type="monotone"
-              dataKey="pressure"
+              dataKey="gasLevel"
               stroke="#ffc658"
-              name={`Pressure (${settings.units.pressure})`}
+              name="Gas Level (%)"
               dot={false}
               strokeWidth={2}
             />

@@ -1,77 +1,69 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Timestamp } from "firebase/firestore";
-import { createSensorData } from "@/app/actions/sensor-crud";
 import { format } from "date-fns";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageContainer } from "@/components/layout/page-container";
-import { SENSOR_ERROR_VALUE } from "@/types/sensor";
+import { createSensorData } from "@/app/actions/sensor-crud";
+import { Timestamp } from "firebase/firestore";
+import type { SensorStatus } from "@/types/sensor";
+
+// Interface for the raw sensor data format
+interface RawSensorData {
+  deviceId: string;
+  distance: number;
+  gasLevel: number;
+  humidity: number;
+  status: SensorStatus;
+  temperature: number;
+  timestamp: string;
+}
 
 export default function TestPage() {
   const [deviceId, setDeviceId] = useState("esp32-001");
-  const [lastData, setLastData] = useState<any>(null);
+  const [lastData, setLastData] = useState<RawSensorData | null>(null);
   const [autoGenerate, setAutoGenerate] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  // Function to generate random sensor data with possible errors
+  // Function to generate sensor data in the exact format shown
   const generateSensorData = useCallback(() => {
-    // Simulate random sensor errors (10% chance for each sensor)
-    const simulateError = () =>
-      Math.random() < 0.1 ? SENSOR_ERROR_VALUE : null;
-
+    const now = new Date();
     return {
       deviceId,
-      temperature:
-        simulateError() ?? Number((20 + Math.random() * 10).toFixed(1)),
-      humidity: simulateError() ?? Number((40 + Math.random() * 30).toFixed(1)),
-      pressure:
-        simulateError() ?? Number((1000 + Math.random() * 100).toFixed(1)),
-      distance:
-        simulateError() ?? Number((50 + Math.random() * 200).toFixed(1)),
-      timestamp: Timestamp.now(),
+      distance: Number((Math.random() * 20).toFixed(3)), // Random distance between 0-20
+      gasLevel: Number((200 + Math.random() * 9800).toFixed(0)), // Random gas level between 200-10000 ppm (typical MQ-4 range)
+      humidity: Number((60 + Math.random() * 20).toFixed(1)), // Random humidity between 60-80
       status: "active" as const,
-      errors: {
-        temperature: simulateError() !== null,
-        humidity: simulateError() !== null,
-        pressure: simulateError() !== null,
-        distance: simulateError() !== null,
-      },
+      temperature: Number((15 + Math.random() * 5).toFixed(1)), // Random temperature between 15-20
+      timestamp: format(now, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"), // ISO 8601 format
     };
   }, [deviceId]);
 
-  // Function to format the displayed data
-  const formatData = useCallback(
-    (data: any) => ({
-      deviceId: data.deviceId,
-      timestamp: format(data.timestamp.toDate(), "HH:mm:ss"),
-      readings: {
-        temperature: data.temperature,
-        humidity: data.humidity,
-        pressure: data.pressure,
-        distance: data.distance,
-      },
-      errors: data.errors,
-    }),
-    []
-  );
+  // Function to convert data for Firebase
+  const convertToFirebaseData = (data: RawSensorData) => {
+    return {
+      ...data,
+      timestamp: Timestamp.now(), // Use current timestamp directly
+    };
+  };
 
   // Function to generate and send data
   const generateAndSendData = useCallback(async () => {
     try {
       setError(null);
-      const data = generateSensorData();
-      await createSensorData(data);
-      setLastData(formatData(data));
+      const rawData = generateSensorData();
+      const firebaseData = convertToFirebaseData(rawData);
+      await createSensorData(firebaseData);
+      setLastData(rawData); // Store the raw format for display
     } catch (err) {
       console.error("Error generating data:", err);
       setError(
         err instanceof Error ? err : new Error("Failed to generate data")
       );
     }
-  }, [generateSensorData, formatData]);
+  }, [generateSensorData]);
 
   // Auto-generate data every 5 seconds
   useEffect(() => {

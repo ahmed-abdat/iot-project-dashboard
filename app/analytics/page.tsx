@@ -12,13 +12,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState } from "react";
-import { differenceInHours, format, isToday } from "date-fns";
+import { differenceInHours, format } from "date-fns";
 import type { SensorData } from "@/types/sensor";
-import { isSensorError, SENSOR_ERROR_VALUE } from "@/types/sensor";
+import { isSensorError } from "@/types/sensor";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import {
+  convertGasLevel,
+  convertDistance,
   convertTemperature,
-  convertPressure,
 } from "@/lib/utils/unit-conversions";
 import type { Settings } from "@/lib/stores/settings-store";
 import type { ChartData } from "@/types/analytics";
@@ -37,35 +38,35 @@ const getThresholds = (timeRange: string) => {
       return {
         temperature: 0.3, // More sensitive for shorter time
         humidity: 2,
-        pressure: 3,
+        gasLevel: 3,
         timeGap: 2, // minutes
       };
     case "6":
       return {
         temperature: 0.5,
         humidity: 3,
-        pressure: 4,
+        gasLevel: 4,
         timeGap: 10, // minutes
       };
     case "24":
       return {
         temperature: 0.8,
         humidity: 4,
-        pressure: 6,
+        gasLevel: 6,
         timeGap: 30, // minutes
       };
     case "168": // 7 days
       return {
         temperature: 1.2,
         humidity: 6,
-        pressure: 8,
+        gasLevel: 8,
         timeGap: 120, // minutes (2 hours)
       };
     default:
       return {
         temperature: 0.8,
         humidity: 4,
-        pressure: 6,
+        gasLevel: 6,
         timeGap: 30,
       };
   }
@@ -102,9 +103,9 @@ const filterAnalyticsData = (
     const humidityChange =
       Math.abs(current.humidity - lastAddedPoint.humidity) >
       thresholds.humidity;
-    const pressureChange =
-      Math.abs(current.pressure - lastAddedPoint.pressure) >
-      thresholds.pressure;
+    const gasLevelChange =
+      Math.abs(current.gasLevel - lastAddedPoint.gasLevel) >
+      thresholds.gasLevel;
 
     // Check time gap
     const minutesSinceLastPoint =
@@ -116,7 +117,7 @@ const filterAnalyticsData = (
     if (
       tempChange ||
       humidityChange ||
-      pressureChange ||
+      gasLevelChange ||
       minutesSinceLastPoint >= thresholds.timeGap
     ) {
       filteredData.push(current);
@@ -161,32 +162,36 @@ const formatChartData = (
         ? null
         : Number(item.humidity.toFixed(1));
 
-    // Safely convert pressure
-    const pressure =
-      isSensorError(item.pressure) || item.pressure == null
+    // Safely convert gas level
+    const gasLevel =
+      isSensorError(item.gasLevel) || item.gasLevel == null
         ? null
         : Number(
-            convertPressure(item.pressure, settings.units.pressure).toFixed(1)
+            convertGasLevel(item.gasLevel, settings.units.gasLevel).toFixed(
+              settings.units.gasLevel === "percent" ? 3 : 0
+            )
           );
 
     // Safely convert distance
     const distance =
       isSensorError(item.distance) || item.distance == null
         ? null
-        : Number(item.distance.toFixed(1));
+        : Number(
+            convertDistance(item.distance, settings.units.distance).toFixed(1)
+          );
 
     return {
       timestamp: format(time, "HH:mm:ss"),
       time,
       temperature,
       humidity,
-      pressure,
+      gasLevel,
       distance,
       // Add error flags for UI indicators
       errors: {
         temperature: isSensorError(item.temperature),
         humidity: isSensorError(item.humidity),
-        pressure: isSensorError(item.pressure),
+        gasLevel: isSensorError(item.gasLevel),
         distance: isSensorError(item.distance),
       },
     };
@@ -212,6 +217,10 @@ export default function AnalyticsPage() {
       color: "hsl(var(--chart-1))",
       type: "line" as const,
       fill: "hsl(var(--chart-1) / 0.1)",
+      tooltipFormatter: (value: number) =>
+        `${value.toFixed(1)}${
+          settings.units.temperature === "celsius" ? "°C" : "°F"
+        }`,
     },
     {
       title: "Humidity Analysis",
@@ -220,22 +229,30 @@ export default function AnalyticsPage() {
       color: "hsl(var(--chart-2))",
       type: "area" as const,
       fill: "hsl(var(--chart-2) / 0.1)",
+      tooltipFormatter: (value: number) => `${value.toFixed(1)}%`,
     },
     {
-      title: "Pressure Analysis",
-      dataKey: "pressure",
-      yAxisLabel: `Pressure (${settings.units.pressure})`,
+      title: "Gas Level Analysis",
+      dataKey: "gasLevel",
+      yAxisLabel: `Gas Level (${
+        settings.units.gasLevel === "percent" ? "%" : "ppm"
+      })`,
       color: "hsl(var(--chart-3))",
       type: "line" as const,
-      fill: "hsl(var(--chart-3) / 0.1)",
+      tooltipFormatter: (value: number) =>
+        settings.units.gasLevel === "percent"
+          ? `${value.toFixed(3)}%`
+          : `${value.toFixed(0)} ppm`,
     },
     {
       title: "Distance Analysis",
       dataKey: "distance",
-      yAxisLabel: "Distance (cm)",
+      yAxisLabel: `Distance (${settings.units.distance})`,
       color: "hsl(var(--chart-4))",
       type: "line" as const,
       fill: "hsl(var(--chart-4) / 0.1)",
+      tooltipFormatter: (value: number) =>
+        `${value.toFixed(1)} ${settings.units.distance}`,
     },
   ];
 
@@ -304,7 +321,12 @@ export default function AnalyticsPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {charts.map((chart) => (
-            <SensorChart key={chart.title} data={data} {...chart} />
+            <SensorChart
+              key={chart.title}
+              data={data}
+              timeRange={timeRange}
+              {...chart}
+            />
           ))}
         </div>
       </div>

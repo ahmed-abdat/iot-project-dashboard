@@ -8,15 +8,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useSettingsStore } from "@/lib/stores/settings-store";
-import { Separator } from "@/components/ui/separator";
 
 export function UnitSettings() {
   const settings = useSettingsStore((state) => state.settings);
   const setUnits = useSettingsStore((state) => state.setUnits);
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
+    <div className="space-y-4">
+      <div className="grid gap-2">
         <label className="text-sm font-medium">Temperature</label>
         <Select
           value={settings.units.temperature}
@@ -34,22 +33,38 @@ export function UnitSettings() {
         </Select>
       </div>
 
-      <Separator />
-
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Pressure</label>
+      <div className="grid gap-2">
+        <label className="text-sm font-medium">Distance</label>
         <Select
-          value={settings.units.pressure}
-          onValueChange={(value: "hPa" | "mmHg") =>
-            setUnits({ ...settings.units, pressure: value })
+          value={settings.units.distance}
+          onValueChange={(value: "cm" | "inches") =>
+            setUnits({ ...settings.units, distance: value })
           }
         >
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="hPa">Hectopascal (hPa)</SelectItem>
-            <SelectItem value="mmHg">Millimeters of Mercury (mmHg)</SelectItem>
+            <SelectItem value="cm">Centimeters (cm)</SelectItem>
+            <SelectItem value="inches">Inches (in)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="grid gap-2">
+        <label className="text-sm font-medium">Gas Level</label>
+        <Select
+          value={settings.units.gasLevel}
+          onValueChange={(value: "ppm" | "percent") =>
+            setUnits({ ...settings.units, gasLevel: value })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ppm">Parts per Million (ppm)</SelectItem>
+            <SelectItem value="percent">Percentage (%)</SelectItem>
           </SelectContent>
         </Select>
       </div>

@@ -176,20 +176,38 @@ export function SettingsView() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Pressure</Label>
+                  <Label>Distance</Label>
                   <Select
-                    value={settings.units.pressure}
-                    onValueChange={(value: "hPa" | "mmHg") =>
-                      setUnits({ ...settings.units, pressure: value })
+                    value={settings.units.distance}
+                    onValueChange={(value: "cm" | "inches") =>
+                      setUnits({ ...settings.units, distance: value })
                     }
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="hPa">Hectopascal (hPa)</SelectItem>
-                      <SelectItem value="mmHg">
-                        Millimeters of Mercury (mmHg)
+                      <SelectItem value="cm">Centimeters (cm)</SelectItem>
+                      <SelectItem value="inches">Inches (in)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Gas Level</Label>
+                  <Select
+                    value={settings.units.gasLevel}
+                    onValueChange={(value: "ppm" | "percent") =>
+                      setUnits({ ...settings.units, gasLevel: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="percent">Percentage (%)</SelectItem>
+                      <SelectItem value="ppm">
+                        Parts per Million (ppm)
                       </SelectItem>
                     </SelectContent>
                   </Select>

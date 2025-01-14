@@ -6,7 +6,8 @@ import type { SensorData } from "@/types/sensor";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import {
   convertTemperature,
-  convertPressure,
+  convertGasLevel,
+  convertDistance,
 } from "@/lib/utils/unit-conversions";
 
 interface SensorStatsProps {
@@ -21,14 +22,14 @@ export function SensorStats({ sensors }: SensorStatsProps) {
     (acc, sensor) => ({
       avgTemperature: acc.avgTemperature + (sensor.temperature || 0),
       avgHumidity: acc.avgHumidity + (sensor.humidity || 0),
-      avgPressure: acc.avgPressure + (sensor.pressure || 0),
+      avgGasLevel: acc.avgGasLevel + (sensor.gasLevel || 0),
       avgDistance: acc.avgDistance + (sensor.distance || 0),
       count: acc.count + 1,
     }),
     {
       avgTemperature: 0,
       avgHumidity: 0,
-      avgPressure: 0,
+      avgGasLevel: 0,
       avgDistance: 0,
       count: 0,
     }
@@ -40,7 +41,7 @@ export function SensorStats({ sensors }: SensorStatsProps) {
   // Calculate average values
   const avgTemperature = stats.avgTemperature / divisor;
   const avgHumidity = stats.avgHumidity / divisor;
-  const avgPressure = stats.avgPressure / divisor;
+  const avgGasLevel = stats.avgGasLevel / divisor;
   const avgDistance = stats.avgDistance / divisor;
 
   // Convert values based on selected units
@@ -48,10 +49,19 @@ export function SensorStats({ sensors }: SensorStatsProps) {
     avgTemperature,
     settings.units.temperature
   );
-  const convertedPressure = convertPressure(
-    avgPressure,
-    settings.units.pressure
+  const convertedGasLevel = convertGasLevel(
+    avgGasLevel,
+    settings.units.gasLevel
   );
+  const convertedDistance = convertDistance(
+    avgDistance,
+    settings.units.distance
+  );
+
+  // Define max values for each unit
+  const maxTemperature = settings.units.temperature === "celsius" ? 50 : 122; // 50°C = 122°F
+  const maxDistance = settings.units.distance === "cm" ? 400 : 157.48; // 400cm = 157.48 inches
+  const maxGasLevel = settings.units.gasLevel === "percent" ? 1 : 10000; // 1% = 10000 ppm
 
   const sensorReadings = [
     {
@@ -60,7 +70,7 @@ export function SensorStats({ sensors }: SensorStatsProps) {
       unit: settings.units.temperature === "celsius" ? "°C" : "°F",
       icon: <Thermometer className="h-4 w-4 text-white" />,
       color: "bg-chart-1",
-      progress: Math.min(100, (avgTemperature / 50) * 100), // Keep progress based on Celsius
+      progress: Math.min(100, (convertedTemperature / maxTemperature) * 100),
     },
     {
       title: "Humidity",
@@ -71,20 +81,20 @@ export function SensorStats({ sensors }: SensorStatsProps) {
       progress: Math.min(100, avgHumidity),
     },
     {
-      title: "Pressure",
-      value: convertedPressure,
-      unit: settings.units.pressure,
-      icon: <Wind className="h-4 w-4 text-white" />,
+      title: "Gas Level",
+      value: convertedGasLevel,
+      unit: settings.units.gasLevel === "percent" ? "%" : "ppm",
+      icon: <Activity className="h-4 w-4 text-white" />,
       color: "bg-chart-3",
-      progress: Math.min(100, (avgPressure / 1100) * 100), // Keep progress based on hPa
+      progress: Math.min(100, (convertedGasLevel / maxGasLevel) * 100),
     },
     {
       title: "Distance",
-      value: avgDistance,
-      unit: "cm",
+      value: convertedDistance,
+      unit: settings.units.distance,
       icon: <Ruler className="h-4 w-4 text-white" />,
       color: "bg-chart-4",
-      progress: Math.min(100, (avgDistance / 400) * 100),
+      progress: Math.min(100, (convertedDistance / maxDistance) * 100),
     },
   ];
 
@@ -94,7 +104,12 @@ export function SensorStats({ sensors }: SensorStatsProps) {
         <SensorCard
           key={sensor.title}
           title={sensor.title}
-          value={Number(sensor.value.toFixed(1))}
+          value={
+            sensor.title === "Gas Level" &&
+            settings.units.gasLevel === "percent"
+              ? Number(sensor.value.toFixed(3))
+              : Number(sensor.value.toFixed(1))
+          }
           unit={sensor.unit}
           icon={sensor.icon}
           color={sensor.color}

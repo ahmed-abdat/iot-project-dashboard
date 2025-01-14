@@ -3,12 +3,7 @@ export interface ChartData {
   time: Date;
   temperature: number | null;
   humidity: number | null;
-  pressure: number | null;
+  gasLevel: number | null;
   distance: number | null;
-  errors: {
-    temperature: boolean;
-    humidity: boolean;
-    pressure: boolean;
-    distance: boolean;
-  };
-} 
+  errors: Record<string, boolean>;
+}

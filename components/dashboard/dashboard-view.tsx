@@ -47,18 +47,6 @@ export function DashboardView() {
     >
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Sensor Dashboard</h1>
-        {hasTriggeredAlerts && (
-          <Link href="/alerts" className="transition-transform hover:scale-105">
-            <Badge
-              variant="destructive"
-              className="h-8 px-3 text-sm animate-pulse"
-            >
-              <Bell className="mr-2 h-4 w-4" />
-              {triggeredAlerts.length} Alert
-              {triggeredAlerts.length > 1 ? "s" : ""} Triggered
-            </Badge>
-          </Link>
-        )}
       </div>
 
       <div className="space-y-6">

@@ -3,20 +3,13 @@ import { Timestamp } from "firebase/firestore";
 export type SensorStatus = "active" | "inactive" | "error";
 
 export interface SensorData {
-  id?: string;
   deviceId: string;
-  temperature: number;
-  humidity: number;
-  pressure: number;
   distance: number;
+  gasLevel: number;
+  humidity: number;
+  status: SensorStatus;
+  temperature: number;
   timestamp: Timestamp;
-  status: "active" | "inactive" | "error";
-  errors?: {
-    temperature?: boolean;
-    humidity?: boolean;
-    pressure?: boolean;
-    distance?: boolean;
-  };
 }
 
 export interface SensorDataInput extends Omit<SensorData, "id"> {}
@@ -24,17 +17,10 @@ export interface SensorDataInput extends Omit<SensorData, "id"> {}
 export interface SensorStats {
   avgTemperature: number;
   avgHumidity: number;
-  avgPressure: number;
   avgDistance: number;
   totalReadings: number;
   activeDevices: number;
   lastUpdate: Timestamp;
-  errorCounts?: {
-    temperature: number;
-    humidity: number;
-    pressure: number;
-    distance: number;
-  };
 }
 
 export interface SensorFilters {

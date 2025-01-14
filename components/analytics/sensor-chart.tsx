@@ -30,6 +30,8 @@ interface SensorChartProps {
   color: string;
   fill?: string;
   domain?: [number | "auto", number | "auto"];
+  tooltipFormatter?: (value: number) => string;
+  timeRange?: string;
 }
 
 const formatTimestamp = (timestamp: Date) => {
@@ -41,10 +43,9 @@ const formatTimestamp = (timestamp: Date) => {
   return format(timestamp, "MMM d, HH:mm");
 };
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label, tooltipFormatter }: any) => {
   if (active && payload && payload.length) {
     const value = payload[0].value;
-    const unit = payload[0].unit || "";
     const hasError = payload[0].payload?.errors?.[payload[0].dataKey];
     const time = payload[0].payload?.time;
 
@@ -71,8 +72,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
               </span>
             ) : value == null ? (
               "---"
+            ) : tooltipFormatter ? (
+              tooltipFormatter(value)
             ) : (
-              `${value.toFixed(1)}${unit}`
+              `${value}`
             )}
           </span>
         </div>
@@ -91,11 +94,51 @@ export function SensorChart({
   color,
   fill,
   domain = ["auto", "auto"],
+  tooltipFormatter,
+  timeRange = "24",
 }: SensorChartProps) {
   // Calculate error rate
   const totalPoints = data.length;
   const errorPoints = data.filter((point) => point.errors?.[dataKey]).length;
   const errorRate = totalPoints > 0 ? (errorPoints / totalPoints) * 100 : 0;
+
+  // Determine dot display settings based on time range
+  const getDotConfig = (timeRange: string) => {
+    switch (timeRange) {
+      case "1": // Last Hour
+        return {
+          showDot: true,
+          dotSize: 2,
+          activeDotSize: 6,
+        };
+      case "6": // Last 6 Hours
+        return {
+          showDot: true,
+          dotSize: 1.5,
+          activeDotSize: 5,
+        };
+      case "24": // Last 24 Hours
+        return {
+          showDot: false,
+          dotSize: 0,
+          activeDotSize: 4,
+        };
+      case "168": // Last 7 Days
+        return {
+          showDot: false,
+          dotSize: 0,
+          activeDotSize: 4,
+        };
+      default:
+        return {
+          showDot: false,
+          dotSize: 0,
+          activeDotSize: 4,
+        };
+    }
+  };
+
+  const dotConfig = getDotConfig(timeRange);
 
   const renderChart = () => {
     const commonProps = {
@@ -116,8 +159,8 @@ export function SensorChart({
           angle={-45}
           textAnchor="end"
           height={60}
-          interval={Math.ceil(data.length / 10)}
-          minTickGap={20}
+          interval="preserveStartEnd"
+          minTickGap={30}
           tick={{ fontSize: 11 }}
           stroke="hsl(var(--foreground))"
           label={{
@@ -138,11 +181,11 @@ export function SensorChart({
           }}
           tick={{ fontSize: 11 }}
           width={60}
-          tickCount={10}
+          tickCount={6}
           stroke="hsl(var(--foreground))"
         />
         <Tooltip
-          content={<CustomTooltip />}
+          content={<CustomTooltip tooltipFormatter={tooltipFormatter} />}
           cursor={{ strokeDasharray: "3 3" }}
         />
         <Legend verticalAlign="top" height={36} />
@@ -162,6 +205,8 @@ export function SensorChart({
               name={title}
               isAnimationActive={false}
               connectNulls
+              dot={dotConfig.showDot ? { r: dotConfig.dotSize } : false}
+              activeDot={{ r: dotConfig.activeDotSize }}
             />
           </AreaChart>
         );
@@ -175,8 +220,12 @@ export function SensorChart({
               stroke={color}
               name={title}
               strokeWidth={2}
-              dot={{ r: 1, strokeWidth: 1, fill: color }}
-              activeDot={{ r: 4, strokeWidth: 2 }}
+              dot={
+                dotConfig.showDot
+                  ? { r: dotConfig.dotSize, strokeWidth: 1, fill: color }
+                  : false
+              }
+              activeDot={{ r: dotConfig.activeDotSize, strokeWidth: 2 }}
               isAnimationActive={false}
               connectNulls
             />

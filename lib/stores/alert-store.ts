@@ -16,11 +16,11 @@ export const ALERT_DEFAULTS = {
     max: 100,
     step: 1,
   },
-  pressure: {
-    unit: "hPa",
-    min: 300,
-    max: 1100,
-    step: 1,
+  gasLevel: {
+    unit: "%",
+    min: 0,
+    max: 100,
+    step: 0.1,
   },
   distance: {
     unit: "cm",
@@ -32,7 +32,7 @@ export const ALERT_DEFAULTS = {
 
 export interface Alert {
   id: string;
-  type: "temperature" | "humidity" | "pressure" | "distance";
+  type: "temperature" | "humidity" | "gasLevel" | "distance";
   operator: "above" | "below" | "between";
   threshold: number;
   thresholdHigh?: number;

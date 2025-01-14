@@ -7,11 +7,26 @@ import {
   limit,
   onSnapshot,
   Timestamp,
+  QueryDocumentSnapshot,
 } from "firebase/firestore";
 import { db } from "@/config/firebase";
 import { SensorData, SensorStats } from "@/types/sensor";
 import { COLLECTIONS } from "@/config/firebase-constants";
 import { getSensorStats } from "@/app/actions/sensor-crud";
+
+// Helper function to convert Firestore doc to SensorData
+function convertToSensorData(doc: QueryDocumentSnapshot) {
+  const data = doc.data();
+  return {
+    deviceId: data.deviceId,
+    temperature: data.temperature,
+    humidity: data.humidity,
+    gasLevel: data.gasLevel,
+    distance: data.distance,
+    timestamp: data.timestamp,
+    status: data.status,
+  } as SensorData;
+}
 
 // Hook for real-time sensor data
 export function useSensorData(deviceId?: string) {
@@ -35,10 +50,7 @@ export function useSensorData(deviceId?: string) {
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const sensorData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as SensorData[];
+        const sensorData = snapshot.docs.map(convertToSensorData);
         setData(sensorData);
         setIsLoading(false);
       },
@@ -122,10 +134,7 @@ export function useSensorHistory(deviceId?: string, hours = 24) {
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const historyData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as SensorData[];
+        const historyData = snapshot.docs.map(convertToSensorData);
         setData(historyData);
         setIsLoading(false);
       },

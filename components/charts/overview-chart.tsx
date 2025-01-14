@@ -22,10 +22,18 @@ import { Badge } from "@/components/ui/badge";
 
 interface OverviewChartProps {
   data: SensorData[];
+  type: "temperature" | "humidity" | "gasLevel" | "distance";
   title: string;
-  type: "temperature" | "humidity" | "pressure" | "distance";
+  color: string;
   isLoading?: boolean;
   error?: Error | null;
+}
+
+interface FormattedDataPoint {
+  timestamp: string;
+  time: Date;
+  value: number | null;
+  displayValue: number | null;
 }
 
 const formatTimestamp = (timestamp: Date) => {
@@ -80,6 +88,7 @@ export function OverviewChart({
   data,
   title,
   type,
+  color,
   isLoading,
   error,
 }: OverviewChartProps) {
@@ -116,47 +125,67 @@ export function OverviewChart({
     );
   }
 
-  const formatData = (data: SensorData[]) => {
-    return data.map((reading) => ({
-      timestamp: formatTimestamp(reading.timestamp.toDate()),
-      time: reading.timestamp.toDate(), // Keep the actual Date object for tooltip
-      value: reading[type],
-      // Set to null for error values so they're not plotted
-      displayValue: isSensorError(reading[type]) ? null : reading[type],
-    }));
+  const formatData = (data: SensorData[], type: OverviewChartProps["type"]) => {
+    return data.map((reading) => {
+      const timestamp = formatTimestamp(reading.timestamp.toDate());
+      const time = reading.timestamp.toDate();
+      let value: number | null = null;
+
+      // Safely get value based on type
+      switch (type) {
+        case "temperature":
+          value = reading.temperature;
+          break;
+        case "humidity":
+          value = reading.humidity;
+          break;
+        case "gasLevel":
+          value = reading.gasLevel;
+          break;
+        case "distance":
+          value = reading.distance;
+          break;
+      }
+
+      return {
+        timestamp,
+        time,
+        value,
+        // Set to null for error values so they're not plotted
+        displayValue: isSensorError(value) ? null : value,
+      };
+    });
   };
 
-  const getYAxisDomain = (type: OverviewChartProps["type"]) => {
+  const getYAxisDomain = (
+    type: OverviewChartProps["type"]
+  ): [number, number] => {
     switch (type) {
       case "temperature":
-        return [15, 35];
+        return [-10, 50]; // Celsius range
       case "humidity":
-        return [30, 70];
-      case "pressure":
-        return [950, 1050];
+        return [0, 100]; // Percentage range
+      case "gasLevel":
+        return [0, 10000]; // PPM range
       case "distance":
-        return [0, 400];
-      default:
-        return ["auto", "auto"];
+        return [0, 400]; // cm range
     }
   };
 
-  const getUnit = (type: OverviewChartProps["type"]) => {
+  const getUnit = (type: OverviewChartProps["type"]): string => {
     switch (type) {
       case "temperature":
         return "°C";
       case "humidity":
         return "%";
-      case "pressure":
-        return "hPa";
+      case "gasLevel":
+        return "ppm";
       case "distance":
         return "cm";
-      default:
-        return "";
     }
   };
 
-  const formattedData = formatData(data);
+  const formattedData = formatData(data, type);
   const [yMin, yMax] = getYAxisDomain(type);
   const unit = getUnit(type);
 

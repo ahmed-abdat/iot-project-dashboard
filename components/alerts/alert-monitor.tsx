@@ -32,7 +32,7 @@ export function AlertMonitor() {
     const currentData = {
       temperature: realtimeSensors[0].temperature,
       humidity: realtimeSensors[0].humidity,
-      pressure: realtimeSensors[0].pressure,
+      gasLevel: realtimeSensors[0].gasLevel,
       distance: realtimeSensors[0].distance,
       timestamp: realtimeSensors[0].timestamp.toDate(),
     };
@@ -100,7 +100,7 @@ export function AlertMonitor() {
                 ? "%"
                 : alert.type === "distance"
                 ? "cm"
-                : "hPa"
+                : "%"
             }`,
             duration: alert.priority === "high" ? 8000 : 5000,
             icon: alert.priority === "high" ? "🚨" : "⚠️",

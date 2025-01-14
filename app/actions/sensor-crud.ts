@@ -61,43 +61,27 @@ export async function getSensorStats(): Promise<SensorStats> {
     );
 
     const snapshot = await getDocs(q);
-    const data = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as SensorData[];
+    const data = snapshot.docs.map((doc) => {
+      const docData = doc.data() as Omit<SensorData, "id">;
+      return {
+        id: doc.id,
+        ...docData,
+      } as SensorData;
+    });
 
     if (!data.length) {
       return {
         avgTemperature: 0,
         avgHumidity: 0,
-        avgPressure: 0,
         avgDistance: 0,
         totalReadings: 0,
         activeDevices: 0,
         lastUpdate: Timestamp.now(),
-        errorCounts: {
-          temperature: 0,
-          humidity: 0,
-          pressure: 0,
-          distance: 0,
-        },
       };
     }
 
     const uniqueDevices = new Set(data.map((d) => d.deviceId));
     const totalReadings = data.length;
-
-    // Count errors
-    const errorCounts = data.reduce(
-      (acc, curr) => ({
-        temperature:
-          acc.temperature + (isSensorError(curr.temperature) ? 1 : 0),
-        humidity: acc.humidity + (isSensorError(curr.humidity) ? 1 : 0),
-        pressure: acc.pressure + (isSensorError(curr.pressure) ? 1 : 0),
-        distance: acc.distance + (isSensorError(curr.distance) ? 1 : 0),
-      }),
-      { temperature: 0, humidity: 0, pressure: 0, distance: 0 }
-    );
 
     // Calculate averages excluding error values
     const totals = data.reduce(
@@ -107,27 +91,21 @@ export async function getSensorStats(): Promise<SensorStats> {
           (isSensorError(curr.temperature) ? 0 : curr.temperature),
         humidity:
           acc.humidity + (isSensorError(curr.humidity) ? 0 : curr.humidity),
-        pressure:
-          acc.pressure + (isSensorError(curr.pressure) ? 0 : curr.pressure),
         distance:
           acc.distance + (isSensorError(curr.distance) ? 0 : curr.distance),
         validTemperature:
           acc.validTemperature + (isSensorError(curr.temperature) ? 0 : 1),
         validHumidity:
           acc.validHumidity + (isSensorError(curr.humidity) ? 0 : 1),
-        validPressure:
-          acc.validPressure + (isSensorError(curr.pressure) ? 0 : 1),
         validDistance:
           acc.validDistance + (isSensorError(curr.distance) ? 0 : 1),
       }),
       {
         temperature: 0,
         humidity: 0,
-        pressure: 0,
         distance: 0,
         validTemperature: 0,
         validHumidity: 0,
-        validPressure: 0,
         validDistance: 0,
       }
     );
@@ -139,16 +117,12 @@ export async function getSensorStats(): Promise<SensorStats> {
       avgHumidity: totals.validHumidity
         ? totals.humidity / totals.validHumidity
         : 0,
-      avgPressure: totals.validPressure
-        ? totals.pressure / totals.validPressure
-        : 0,
       avgDistance: totals.validDistance
         ? totals.distance / totals.validDistance
         : 0,
       totalReadings,
       activeDevices: uniqueDevices.size,
       lastUpdate: Timestamp.now(),
-      errorCounts,
     };
   } catch (error) {
     console.error("Error getting sensor stats:", error);
@@ -202,10 +176,13 @@ export async function listSensorData(
     const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1] || null;
 
     return {
-      data: querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as SensorData[],
+      data: querySnapshot.docs.map((doc) => {
+        const docData = doc.data() as Omit<SensorData, "id">;
+        return {
+          id: doc.id,
+          ...docData,
+        } as SensorData;
+      }),
       lastDoc,
     };
   } catch (error) {

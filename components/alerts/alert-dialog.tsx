@@ -37,7 +37,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
-  type: z.enum(["temperature", "humidity", "pressure", "distance"]),
+  type: z.enum(["temperature", "humidity", "gasLevel", "distance"]),
   operator: z.enum(["above", "below", "between"]),
   threshold: z.coerce.number().min(-100).max(100),
   thresholdHigh: z.coerce.number().min(-100).max(100).optional(),
@@ -132,7 +132,7 @@ export function AlertDialog({
                       <SelectContent>
                         <SelectItem value="temperature">Temperature</SelectItem>
                         <SelectItem value="humidity">Humidity</SelectItem>
-                        <SelectItem value="pressure">Pressure</SelectItem>
+                        <SelectItem value="gasLevel">Gas Level</SelectItem>
                         <SelectItem value="distance">Distance</SelectItem>
                       </SelectContent>
                     </Select>

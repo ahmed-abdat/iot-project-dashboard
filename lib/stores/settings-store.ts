@@ -9,7 +9,8 @@ export interface Settings {
   theme: "light" | "dark" | "system";
   units: {
     temperature: "celsius" | "fahrenheit";
-    pressure: "hPa" | "mmHg";
+    distance: "cm" | "inches";
+    gasLevel: "ppm" | "percent";
   };
   notifications: {
     enabled: boolean;
@@ -34,7 +35,8 @@ const DEFAULT_SETTINGS: Settings = {
   theme: "system",
   units: {
     temperature: "celsius",
-    pressure: "hPa",
+    distance: "cm",
+    gasLevel: "ppm",
   },
   notifications: {
     enabled: false,
