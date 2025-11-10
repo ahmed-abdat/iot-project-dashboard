@@ -42,15 +42,15 @@ export function AccelerationTimeSeriesChart({ data }: MotorChartsProps) {
 
   const chartConfig = {
     accX: {
-      label: "X-Axis",
+      label: "Axe-X",
       color: "hsl(var(--chart-1))",
     },
     accY: {
-      label: "Y-Axis",
+      label: "Axe-Y",
       color: "hsl(var(--chart-2))",
     },
     accZ: {
-      label: "Z-Axis",
+      label: "Axe-Z",
       color: "hsl(var(--chart-3))",
     },
   } satisfies ChartConfig;
@@ -60,7 +60,7 @@ export function AccelerationTimeSeriesChart({ data }: MotorChartsProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Activity className="h-5 w-5" />
-          3-Axis Acceleration Timeline
+          Chronologie de l'Accélération 3-Axes
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -74,7 +74,7 @@ export function AccelerationTimeSeriesChart({ data }: MotorChartsProps) {
             />
             <YAxis
               tick={{ fontSize: 12 }}
-              label={{ value: 'Acceleration (m/s²)', angle: -90, position: 'insideLeft' }}
+              label={{ value: 'Accélération (m/s²)', angle: -90, position: 'insideLeft' }}
             />
             <ChartTooltip
               content={<ChartTooltipContent
@@ -120,7 +120,7 @@ export function VibrationMagnitudeChart({ data }: MotorChartsProps) {
 
   const chartConfig = {
     magnitude: {
-      label: "Vibration Magnitude",
+      label: "Magnitude de Vibration",
       color: "hsl(var(--chart-4))",
     },
   } satisfies ChartConfig;
@@ -130,7 +130,7 @@ export function VibrationMagnitudeChart({ data }: MotorChartsProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <TrendingUp className="h-5 w-5" />
-          Vibration Magnitude Trend
+          Tendance de la Magnitude de Vibration
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -154,7 +154,7 @@ export function VibrationMagnitudeChart({ data }: MotorChartsProps) {
             />
             <ChartTooltip
               content={<ChartTooltipContent
-                formatter={(value) => [`${Number(value).toFixed(2)} m/s²`, 'Vibration Magnitude']}
+                formatter={(value) => [`${Number(value).toFixed(2)} m/s²`, 'Magnitude de Vibration']}
               />}
             />
             <Area
@@ -189,7 +189,7 @@ export function AnomalyScoreChart({ data }: MotorChartsProps) {
 
   const chartConfig = {
     score: {
-      label: "K-means Distance",
+      label: "Distance K-means",
       color: "hsl(var(--destructive))",
     },
   } satisfies ChartConfig;
@@ -202,16 +202,16 @@ export function AnomalyScoreChart({ data }: MotorChartsProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <BarChart3 className="h-5 w-5" />
-          Anomaly Score History
+          Historique des Scores d'Anomalie
           <span className="text-sm font-normal text-muted-foreground">
-            ({anomalyCount} anomalies / {totalCount} readings)
+            ({anomalyCount} anomalies / {totalCount} lectures)
           </span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         {chartData.length === 0 ? (
           <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-            No anomalies detected (threshold: {anomalyThreshold})
+            Aucune anomalie détectée (seuil: {anomalyThreshold})
           </div>
         ) : (
           <ChartContainer config={chartConfig} className="h-[300px] w-full">
@@ -226,11 +226,11 @@ export function AnomalyScoreChart({ data }: MotorChartsProps) {
                 tick={{ fontSize: 12 }}
                 domain={[0, 5]}
                 ticks={[0, 1, 2, 3, 4, 5]}
-                label={{ value: 'K-means Distance', angle: -90, position: 'insideLeft' }}
+                label={{ value: 'Distance K-means', angle: -90, position: 'insideLeft' }}
               />
               <ChartTooltip
                 content={<ChartTooltipContent
-                  formatter={(value) => [`${Number(value).toFixed(3)} (threshold: ${anomalyThreshold})`, 'Anomaly Score']}
+                  formatter={(value) => [`${Number(value).toFixed(3)} (seuil: ${anomalyThreshold})`, 'Score d\'Anomalie']}
                 />}
               />
               <Bar
@@ -256,7 +256,7 @@ export function ClassificationDistributionChart({ data }: MotorChartsProps) {
   const chartData = [
     {
       name: 'idle',
-      label: 'Idle',
+      label: 'Inactif',
       count: idleCount,
       percentage: ((idleCount / totalCount) * 100).toFixed(1),
       fill: 'var(--color-idle)',
@@ -270,7 +270,7 @@ export function ClassificationDistributionChart({ data }: MotorChartsProps) {
     },
     {
       name: 'anomaly',
-      label: 'Anomaly',
+      label: 'Anomalie',
       count: anomalyCount,
       percentage: ((anomalyCount / totalCount) * 100).toFixed(1),
       fill: 'var(--color-anomaly)',
@@ -279,7 +279,7 @@ export function ClassificationDistributionChart({ data }: MotorChartsProps) {
 
   const chartConfig = {
     idle: {
-      label: "Idle",
+      label: "Inactif",
       color: "hsl(var(--muted-foreground))",
     },
     nominal: {
@@ -287,7 +287,7 @@ export function ClassificationDistributionChart({ data }: MotorChartsProps) {
       color: "hsl(var(--chart-3))",
     },
     anomaly: {
-      label: "Anomaly",
+      label: "Anomalie",
       color: "hsl(var(--destructive))",
     },
   } satisfies ChartConfig;
@@ -297,7 +297,7 @@ export function ClassificationDistributionChart({ data }: MotorChartsProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <PieChart className="h-5 w-5" />
-          Motor Operation Distribution
+          Distribution des Opérations du Moteur
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -309,7 +309,7 @@ export function ClassificationDistributionChart({ data }: MotorChartsProps) {
             <ChartTooltip
               content={<ChartTooltipContent
                 formatter={(value, name, props) => [
-                  `${value} readings (${props.payload.percentage}%)`,
+                  `${value} lectures (${props.payload.percentage}%)`,
                   props.payload.label
                 ]}
               />}
@@ -327,7 +327,7 @@ export function ClassificationDistributionChart({ data }: MotorChartsProps) {
         <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded" style={{ backgroundColor: 'hsl(var(--muted-foreground))' }}></div>
-            <span>Idle: {idleCount} ({((idleCount / totalCount) * 100).toFixed(1)}%)</span>
+            <span>Inactif: {idleCount} ({((idleCount / totalCount) * 100).toFixed(1)}%)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded" style={{ backgroundColor: 'hsl(var(--chart-3))' }}></div>
@@ -335,7 +335,7 @@ export function ClassificationDistributionChart({ data }: MotorChartsProps) {
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded" style={{ backgroundColor: 'hsl(var(--destructive))' }}></div>
-            <span>Anomaly: {anomalyCount} ({((anomalyCount / totalCount) * 100).toFixed(1)}%)</span>
+            <span>Anomalie: {anomalyCount} ({((anomalyCount / totalCount) * 100).toFixed(1)}%)</span>
           </div>
         </div>
       </CardContent>

@@ -19,9 +19,9 @@ import { toast } from "sonner";
 const loginSchema = z.object({
   email: z
     .string()
-    .email("Please enter a valid email address")
-    .min(1, "Email is required"),
-  password: z.string().min(1, "Password is required"),
+    .email("Veuillez entrer une adresse e-mail valide")
+    .min(1, "L'e-mail est requis"),
+  password: z.string().min(1, "Le mot de passe est requis"),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -44,7 +44,7 @@ export function LoginForm() {
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error("An unexpected error occurred");
+        toast.error("Une erreur inattendue s'est produite");
       }
       // Reset the password field on error
       form.reset({ email: data.email, password: "" });
@@ -59,11 +59,11 @@ export function LoginForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>E-mail</FormLabel>
               <FormControl>
                 <Input
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="Entrez votre e-mail"
                   disabled={isLoading}
                   {...field}
                 />
@@ -77,11 +77,11 @@ export function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Mot de passe</FormLabel>
               <FormControl>
                 <Input
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder="Entrez votre mot de passe"
                   disabled={isLoading}
                   {...field}
                 />
@@ -91,7 +91,7 @@ export function LoginForm() {
           )}
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Signing in..." : "Sign in"}
+          {isLoading ? "Connexion..." : "Se connecter"}
         </Button>
       </form>
     </Form>

@@ -44,11 +44,11 @@ const formatCondition = (alert: Alert) => {
 
   switch (alert.operator) {
     case "above":
-      return `Above ${value}`;
+      return `Au-dessus de ${value}`;
     case "below":
-      return `Below ${value}`;
+      return `En dessous de ${value}`;
     case "between":
-      return `Between ${value}${highValue}`;
+      return `Entre ${value}${highValue}`;
   }
 };
 
@@ -71,8 +71,8 @@ export default function AlertsPage() {
   if (loading) {
     return (
       <PageContainer
-        title="Alert Management"
-        description="Configure and manage your sensor alerts"
+        title="Gestion des Alertes"
+        description="Configurer et gérer vos alertes de capteur"
       >
         <SkeletonCard className="h-[400px]" />
       </PageContainer>
@@ -82,11 +82,11 @@ export default function AlertsPage() {
   if (error) {
     return (
       <PageContainer
-        title="Alert Management"
-        description="Configure and manage your sensor alerts"
+        title="Gestion des Alertes"
+        description="Configurer et gérer vos alertes de capteur"
       >
         <ErrorCard
-          title="Failed to load alerts"
+          title="Échec du chargement des alertes"
           message={error.message}
           onRetry={refetch}
         />
@@ -113,9 +113,9 @@ export default function AlertsPage() {
     if (!deletingAlertId) return;
     try {
       await deleteAlert(deletingAlertId);
-      toast.success("Alert deleted successfully");
+      toast.success("Alerte supprimée avec succès");
     } catch (error) {
-      toast.error("Failed to delete alert");
+      toast.error("Échec de la suppression de l'alerte");
     }
     setIsDeleteDialogOpen(false);
     setDeletingAlertId(null);
@@ -125,23 +125,23 @@ export default function AlertsPage() {
     try {
       if (editingAlert) {
         await updateAlert(editingAlert.id, data);
-        toast.success("Alert updated successfully");
+        toast.success("Alerte mise à jour avec succès");
       } else {
         await createAlert(data);
-        toast.success("Alert created successfully");
+        toast.success("Alerte créée avec succès");
       }
       setIsDialogOpen(false);
     } catch (error) {
-      toast.error("Failed to save alert");
+      toast.error("Échec de l'enregistrement de l'alerte");
     }
   };
 
   const handleToggle = async (id: string) => {
     try {
       await toggleAlert(id);
-      toast.success("Alert status updated");
+      toast.success("Statut de l'alerte mis à jour");
     } catch (error) {
-      toast.error("Failed to update alert status");
+      toast.error("Échec de la mise à jour du statut de l'alerte");
     }
   };
 
@@ -151,24 +151,24 @@ export default function AlertsPage() {
 
   return (
     <PageContainer
-      title="Alert Management"
-      description="Configure and manage your sensor alerts"
+      title="Gestion des Alertes"
+      description="Configurer et gérer vos alertes de capteur"
     >
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-4">
           <Badge variant="secondary" className="h-8 px-3 text-sm">
             <Bell className="mr-2 h-4 w-4" />
-            {activeAlerts} Active
+            {activeAlerts} Actives
           </Badge>
           {triggeredAlerts > 0 && (
             <Badge variant="destructive" className="h-8 px-3 text-sm">
               <Bell className="mr-2 h-4 w-4" />
-              {triggeredAlerts} Triggered
+              {triggeredAlerts} Déclenchées
             </Badge>
           )}
         </div>
         <Button onClick={handleCreate} className="gap-2">
-          <Plus className="h-4 w-4" /> Create Alert
+          <Plus className="h-4 w-4" /> Créer une Alerte
         </Button>
       </div>
 
@@ -176,12 +176,12 @@ export default function AlertsPage() {
         <div className="rounded-lg border bg-card p-8">
           <div className="flex flex-col items-center justify-center text-center">
             <Bell className="h-12 w-12 text-muted-foreground/50" />
-            <h3 className="mt-4 text-lg font-semibold">No alerts configured</h3>
+            <h3 className="mt-4 text-lg font-semibold">Aucune alerte configurée</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Create your first alert to start monitoring your sensors.
+              Créez votre première alerte pour commencer à surveiller vos capteurs.
             </p>
             <Button onClick={handleCreate} className="mt-4 gap-2">
-              <Plus className="h-4 w-4" /> Create Alert
+              <Plus className="h-4 w-4" /> Créer une Alerte
             </Button>
           </div>
         </div>
@@ -193,9 +193,9 @@ export default function AlertsPage() {
                 <TableHead>Type</TableHead>
                 <TableHead>Condition</TableHead>
                 <TableHead>Message</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Priority</TableHead>
-                <TableHead>Last Triggered</TableHead>
+                <TableHead>Statut</TableHead>
+                <TableHead>Priorité</TableHead>
+                <TableHead>Dernier Déclenchement</TableHead>
                 <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -238,7 +238,7 @@ export default function AlertsPage() {
                   <TableCell>
                     {alert.lastTriggered
                       ? new Date(alert.lastTriggered).toLocaleString()
-                      : "Never"}
+                      : "Jamais"}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -247,7 +247,7 @@ export default function AlertsPage() {
                         size="icon"
                         onClick={() => handleToggle(alert.id)}
                         title={
-                          alert.status === "active" ? "Deactivate" : "Activate"
+                          alert.status === "active" ? "Désactiver" : "Activer"
                         }
                       >
                         <Power
@@ -262,7 +262,7 @@ export default function AlertsPage() {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleEdit(alert)}
-                        title="Edit"
+                        title="Modifier"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -270,7 +270,7 @@ export default function AlertsPage() {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDelete(alert.id)}
-                        title="Delete"
+                        title="Supprimer"
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
@@ -296,16 +296,15 @@ export default function AlertsPage() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Alert</AlertDialogTitle>
+            <AlertDialogTitle>Supprimer l'Alerte</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this alert? This action cannot be
-              undone.
+              Êtes-vous sûr de vouloir supprimer cette alerte ? Cette action ne peut pas être annulée.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmDelete}>
-              Delete
+              Supprimer
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

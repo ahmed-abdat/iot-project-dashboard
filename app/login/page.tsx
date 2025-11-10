@@ -13,9 +13,9 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background/95 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Bienvenue</h1>
           <p className="text-muted-foreground text-sm">
-            Enter your credentials to access the dashboard
+            Entrez vos identifiants pour accéder au tableau de bord
           </p>
         </CardHeader>
         <CardContent>
@@ -23,7 +23,7 @@ export default function LoginPage() {
         </CardContent>
         <CardFooter className="justify-center">
           <p className="text-sm text-muted-foreground">
-            Protected by Firebase Authentication
+            Protégé par Firebase Authentication
           </p>
         </CardFooter>
       </Card>

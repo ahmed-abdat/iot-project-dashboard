@@ -46,9 +46,9 @@ export function SettingsView() {
     setIsSaving(true);
     try {
       await saveSettings();
-      toast.success("Settings saved successfully");
+      toast.success("Paramètres enregistrés avec succès");
     } catch (error) {
-      toast.error("Failed to save settings");
+      toast.error("Échec de l'enregistrement des paramètres");
     } finally {
       setIsSaving(false);
     }
@@ -56,33 +56,33 @@ export function SettingsView() {
 
   return (
     <PageContainer
-      title="Settings"
-      description="Manage your application preferences"
+      title="Paramètres"
+      description="Gérer vos préférences d'application"
     >
       <div className="flex flex-col gap-6">
         <Tabs defaultValue="appearance" className="space-y-4">
           <TabsList className="bg-muted">
             <TabsTrigger value="appearance" className="flex items-center gap-2">
               <Sun className="h-4 w-4" />
-              Appearance
+              Apparence
             </TabsTrigger>
             <TabsTrigger value="sensor" className="flex items-center gap-2">
               <Settings2 className="h-4 w-4" />
-              Motor Sensor
+              Capteur Moteur
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="appearance">
             <Card>
               <CardHeader>
-                <CardTitle>Appearance</CardTitle>
+                <CardTitle>Apparence</CardTitle>
                 <CardDescription>
-                  Customize how the application looks
+                  Personnalisez l'apparence de l'application
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label>Theme</Label>
+                  <Label>Thème</Label>
                   <div className="flex gap-2">
                     <Button
                       variant={theme === "light" ? "default" : "outline"}
@@ -114,17 +114,17 @@ export function SettingsView() {
           <TabsContent value="sensor">
             <Card>
               <CardHeader>
-                <CardTitle>Motor Sensor Configuration</CardTitle>
+                <CardTitle>Configuration du Capteur Moteur</CardTitle>
                 <CardDescription>
-                  Configure ADXL345 accelerometer update settings
+                  Configurer les paramètres de mise à jour de l'accéléromètre ADXL345
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Dashboard Refresh Rate</Label>
+                    <Label>Taux de Rafraîchissement du Tableau de Bord</Label>
                     <p className="text-sm text-muted-foreground">
-                      Control how often dashboard updates from Firebase
+                      Contrôler la fréquence de mise à jour du tableau de bord depuis Firebase
                     </p>
                   </div>
 
@@ -135,9 +135,9 @@ export function SettingsView() {
                       onClick={() => setUpdateInterval(0)}
                     >
                       <div className="text-left">
-                        <div className="font-medium">Real-time (Live)</div>
+                        <div className="font-medium">Temps réel (En direct)</div>
                         <div className="text-xs text-muted-foreground">
-                          Always on, updates instantly
+                          Toujours actif, mises à jour instantanées
                         </div>
                       </div>
                     </Button>
@@ -148,9 +148,9 @@ export function SettingsView() {
                       onClick={() => setUpdateInterval(5)}
                     >
                       <div className="text-left">
-                        <div className="font-medium">Fast (5 seconds)</div>
+                        <div className="font-medium">Rapide (5 secondes)</div>
                         <div className="text-xs text-muted-foreground">
-                          Good balance of freshness and performance
+                          Bon équilibre entre fraîcheur et performance
                         </div>
                       </div>
                     </Button>
@@ -161,9 +161,9 @@ export function SettingsView() {
                       onClick={() => setUpdateInterval(30)}
                     >
                       <div className="text-left">
-                        <div className="font-medium">Moderate (30 seconds)</div>
+                        <div className="font-medium">Modéré (30 secondes)</div>
                         <div className="text-xs text-muted-foreground">
-                          Lower data usage, still responsive
+                          Utilisation de données réduite, toujours réactif
                         </div>
                       </div>
                     </Button>
@@ -174,9 +174,9 @@ export function SettingsView() {
                       onClick={() => setUpdateInterval(300)}
                     >
                       <div className="text-left">
-                        <div className="font-medium">Low (5 minutes)</div>
+                        <div className="font-medium">Faible (5 minutes)</div>
                         <div className="text-xs text-muted-foreground">
-                          Minimal resource usage
+                          Utilisation minimale des ressources
                         </div>
                       </div>
                     </Button>
@@ -188,10 +188,10 @@ export function SettingsView() {
                   {isSaving ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
+                      Enregistrement...
                     </>
                   ) : (
-                    "Save Changes"
+                    "Enregistrer les modifications"
                   )}
                 </Button>
               </CardFooter>

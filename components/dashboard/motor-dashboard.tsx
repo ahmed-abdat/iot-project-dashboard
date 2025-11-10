@@ -207,14 +207,14 @@ export function MotorDashboard() {
               <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0" />
               <div className="flex-1">
                 <p className="font-semibold text-red-900 dark:text-red-100">
-                  Anomaly Detected
+                  Anomalie Détectée
                 </p>
                 <p className="text-sm text-red-700 dark:text-red-300">
-                  Anomaly score: {latestReading.anomalyScore.toFixed(1)} - Motor behavior is outside normal operating parameters
+                  Score d'anomalie: {latestReading.anomalyScore.toFixed(1)} - Le comportement du moteur est en dehors des paramètres normaux
                 </p>
               </div>
               <Badge variant="destructive" className="ml-auto">
-                Alert
+                Alerte
               </Badge>
             </div>
           </CardContent>
@@ -232,20 +232,20 @@ export function MotorDashboard() {
                 <Activity className="h-16 w-16 mx-auto text-primary relative z-10 animate-bounce" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-2xl font-semibold">Waiting for Motor Data</h3>
+                <h3 className="text-2xl font-semibold">En attente des Données du Moteur</h3>
                 <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-                  No sensor readings detected yet. Ensure your ESP32 device is powered on,
-                  connected to WiFi, and properly configured with Firebase credentials.
+                  Aucune lecture de capteur détectée. Assurez-vous que votre appareil ESP32 est allumé,
+                  connecté au WiFi et correctement configuré avec les identifiants Firebase.
                 </p>
               </div>
               <div className="pt-4 space-y-3">
                 <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                   <CheckCircle className="h-4 w-4 text-emerald-500" />
-                  <span>Expected data rate: 2 readings/sec</span>
+                  <span>Taux de données attendu: 2 lectures/sec</span>
                 </div>
                 <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                   <Clock className="h-4 w-4 text-blue-500" />
-                  <span>Sampling interval: 500ms</span>
+                  <span>Intervalle d'échantillonnage: 500ms</span>
                 </div>
               </div>
             </div>
@@ -270,16 +270,16 @@ export function MotorDashboard() {
             <ClassificationDistributionChart data={combinedData} />
           </div>
 
-          {/* Session Statistics */}
+          {/* Statistiques de Session */}
           <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
             <Card className="transition-all hover:shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <div className="text-sm font-medium text-muted-foreground">Total Readings</div>
+                <div className="text-sm font-medium text-muted-foreground">Total de Lectures</div>
                 <Activity className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{combinedData.length.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground mt-1">All time</p>
+                <p className="text-xs text-muted-foreground mt-1">Tout le temps</p>
               </CardContent>
             </Card>
 
@@ -293,14 +293,14 @@ export function MotorDashboard() {
                   {combinedData.filter(d => d.isAnomaly).length.toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {((combinedData.filter(d => d.isAnomaly).length / combinedData.length) * 100).toFixed(1)}% of total
+                  {((combinedData.filter(d => d.isAnomaly).length / combinedData.length) * 100).toFixed(1)}% du total
                 </p>
               </CardContent>
             </Card>
 
             <Card className="transition-all hover:shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <div className="text-sm font-medium text-muted-foreground">Idle Time</div>
+                <div className="text-sm font-medium text-muted-foreground">Temps Inactif</div>
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -308,14 +308,14 @@ export function MotorDashboard() {
                   {((combinedData.filter(d => d.classification === 'idle').length / combinedData.length) * 100).toFixed(1)}%
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {combinedData.filter(d => d.classification === 'idle').length.toLocaleString()} readings
+                  {combinedData.filter(d => d.classification === 'idle').length.toLocaleString()} lectures
                 </p>
               </CardContent>
             </Card>
 
             <Card className="transition-all hover:shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <div className="text-sm font-medium text-muted-foreground">Active Time</div>
+                <div className="text-sm font-medium text-muted-foreground">Temps Actif</div>
                 <CheckCircle className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -323,7 +323,7 @@ export function MotorDashboard() {
                   {((combinedData.filter(d => d.classification === 'nominal').length / combinedData.length) * 100).toFixed(1)}%
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {combinedData.filter(d => d.classification === 'nominal').length.toLocaleString()} readings
+                  {combinedData.filter(d => d.classification === 'nominal').length.toLocaleString()} lectures
                 </p>
               </CardContent>
             </Card>
