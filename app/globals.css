@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+@layer base {
+  :root {
+    /* Light Mode - Clean Industrial Theme */
+    --background: 0 0% 100%;
+    --foreground: 222.2 47.4% 11.2%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 47.4% 11.2%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+
+    /* Primary: Professional Blue (Industrial/Tech) */
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: Subtle Blue-Gray */
+    --secondary: 214.3 31.8% 91.4%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    /* Muted: Light backgrounds */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    /* Accent: Slightly darker blue for highlights */
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    /* Destructive: Red for errors/anomalies */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Borders and inputs */
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 217.2 91.2% 59.8%;
+
+    /* Chart colors - Optimized for data visualization */
+    --chart-1: 217 91% 60%;  /* Blue - Primary data */
+    --chart-2: 142 76% 36%;  /* Emerald - Nominal/Good */
+    --chart-3: 38 92% 50%;   /* Orange - Warning */
+    --chart-4: 280 65% 60%;  /* Purple - Alternative */
+    --chart-5: 0 84% 60%;    /* Red - Critical/Anomaly */
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark Mode - Professional Dark Theme */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 47.4% 11.2%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 47.4% 11.2%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Primary: Brighter Blue for dark mode */
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    /* Secondary: Dark blue-gray */
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    /* Muted: Dark backgrounds */
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    /* Accent: Darker blue for highlights */
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    /* Destructive: Darker red for dark mode */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Borders and inputs */
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 217.2 91.2% 59.8%;
+
+    /* Chart colors - Dark mode optimized */
+    --chart-1: 217 91% 65%;  /* Blue - Brighter for dark */
+    --chart-2: 142 71% 45%;  /* Emerald - Adjusted for dark */
+    --chart-3: 38 92% 55%;   /* Orange - Slightly brighter */
+    --chart-4: 280 65% 65%;  /* Purple - Brighter */
+    --chart-5: 0 84% 65%;    /* Red - Brighter for visibility */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

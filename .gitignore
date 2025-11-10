@@ -1,0 +1,72 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Next.js build output
+.next/
+out/
+dist/
+build/
+
+# Production
+/build
+
+# Misc
+.DS_Store
+*.pem
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Local env files
+.env
+.env*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Testing
+coverage/
+.nyc_output/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Cache
+.cache/
+.parcel-cache/
+.eslintcache
+.npm/
+.npm/*
+
+# Lock files (keep pnpm-lock.yaml but ignore others)
+package-lock.json
+yarn.lock
+
+# Project-specific
+*.log
+.turbo
+
+
+# Next.js (already covered above, removing duplicates)
+.mcp.json
